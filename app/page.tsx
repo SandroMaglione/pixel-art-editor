@@ -47,7 +47,7 @@ export default function Home() {
   };
 
   return (
-    <main className="max-w-full overflow-x-hidden">
+    <main className="absolute inset-0 overflow-hidden flex flex-col">
       <form
         onSubmit={(e) => {
           e.preventDefault();
@@ -103,26 +103,25 @@ export default function Home() {
         </ModeButton>
       </div>
 
-      <div className="flex flex-col space-y-8 overflow-x-hidden my-4">
-        <div
-          className="bg-white grid w-1/4"
-          style={{
-            gridTemplateColumns: `repeat(${size.w}, minmax(0, 1fr))`,
-          }}
-        >
-          {canvasGrid.map((r, x) =>
-            r.map((color, y) => (
-              <span
-                key={`${x}-${y}`}
-                className="aspect-square"
-                style={{
-                  backgroundColor: `hsl(${color[0]}deg ${color[1]}% ${color[2]}%)`,
-                }}
-              />
-            ))
-          )}
-        </div>
-
+      <div
+        className="bg-white grid w-1/4"
+        style={{
+          gridTemplateColumns: `repeat(${size.w}, minmax(0, 1fr))`,
+        }}
+      >
+        {canvasGrid.map((r, x) =>
+          r.map((color, y) => (
+            <span
+              key={`${x}-${y}`}
+              className="aspect-square"
+              style={{
+                backgroundColor: `hsl(${color[0]}deg ${color[1]}% ${color[2]}%)`,
+              }}
+            />
+          ))
+        )}
+      </div>
+      <div className="flex-1 flex items-center justify-center px-6">
         <div
           onTouchEnd={() => setIsClicking(false)}
           onTouchStart={(e) => {
