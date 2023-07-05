@@ -68,12 +68,12 @@ export class CanvasGrid {
     this.context.strokeStyle = "#e1e1e1";
     this.context.beginPath();
     for (let x = 0; x <= this.trueWidth(); x += CELL_SIZE) {
-      this.context.moveTo(this.toScreenX(x), this.toScreenY(0));
+      this.context.moveTo(this.toScreenX(x), 0);
       this.context.lineTo(this.toScreenX(x), this.toScreenX(this.trueHeight()));
     }
 
     for (let y = 0; y <= this.trueHeight(); y += CELL_SIZE) {
-      this.context.moveTo(this.toScreenX(0), this.toScreenY(y));
+      this.context.moveTo(0, this.toScreenY(y));
       this.context.lineTo(this.toScreenX(this.trueWidth()), this.toScreenY(y));
     }
     this.context.stroke();
