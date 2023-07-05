@@ -4,6 +4,7 @@ import { lerp } from "@/lib/helpers";
 import { EditorMode } from "@/lib/types";
 import { useState } from "react";
 import ColorPickerBar from "./ColorPickerBar";
+import InfiniteCanvas from "./InfiniteCanvas";
 import InputField from "./InputField";
 import ModeButton from "./ModeButton";
 
@@ -69,6 +70,8 @@ export default function Home() {
         <button type="submit">Set</button>
       </form>
 
+      <InfiniteCanvas />
+
       <div className="flex">
         <ModeButton mode="color" onClick={setMode} currentMode={mode}>
           <svg
@@ -121,6 +124,7 @@ export default function Home() {
           ))
         )}
       </div>
+
       <div className="flex-1 flex items-center justify-center px-6">
         <div
           onTouchEnd={() => setIsClicking(false)}
