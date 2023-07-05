@@ -43,18 +43,11 @@ export default function InfiniteCanvas(): ReactElement {
           const prevScaledX = canvasGrid.toTrueX(prevTouch0X);
           const prevScaledY = canvasGrid.toTrueY(prevTouch0Y);
 
-          console.log("Click", canvasGrid.touchMode);
-
           if (canvasGrid.touchMode === "single") {
+            canvasGrid.addCellAt(touch0X, touch0Y);
+            canvasGrid.draw();
+
             // TODO
-            // add to history
-            console.log({
-              x0: prevScaledX,
-              y0: prevScaledY,
-              x1: scaledX,
-              y1: scaledY,
-            });
-            // drawLine(prevTouch0X, prevTouch0Y, touch0X, touch0Y);
           } else if (canvasGrid.touchMode === "double") {
             // get second touch coordinates
             const touch1X = event.touches[1].pageX;

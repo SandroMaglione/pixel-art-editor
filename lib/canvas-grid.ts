@@ -11,6 +11,13 @@ export class CanvasGrid {
   touchMode: "single" | "double" = "single";
   prevTouch: [React.Touch | null, React.Touch | null] = [null, null];
 
+  cells: [number, number][] = [
+    [0, 0],
+    [10, 4],
+    [5, 5],
+    [4, 12],
+  ];
+
   constructor() {
     this.canvas = document.getElementById("canvas")! as HTMLCanvasElement;
     this.context = this.canvas.getContext("2d")!;
@@ -22,6 +29,7 @@ export class CanvasGrid {
     this.context.clearRect(0, 0, this.canvas.width, this.canvas.height);
 
     this._drawGrid();
+    this._drawCells();
   }
 
   toScreenX(xTrue: number): number {
@@ -49,18 +57,37 @@ export class CanvasGrid {
     this.scale *= amount;
   }
 
+  addCellAt(touchX: number, touchY: number): void {
+    this.cells.push([
+      Math.floor(touchX / this.toScreenX(CELL_SIZE)),
+      Math.floor(touchY / this.toScreenY(CELL_SIZE)),
+    ]);
+  }
+
   private _drawGrid(): void {
     this.context.strokeStyle = "#e1e1e1";
     this.context.beginPath();
-    for (let x = 0; x <= this.trueWidth(); x += CELL_SIZE * this.scale) {
+    for (let x = 0; x <= this.trueWidth(); x += CELL_SIZE) {
       this.context.moveTo(this.toScreenX(x), this.toScreenY(0));
       this.context.lineTo(this.toScreenX(x), this.toScreenX(this.trueHeight()));
     }
 
-    for (let y = 0; y <= this.trueHeight(); y += CELL_SIZE * this.scale) {
+    for (let y = 0; y <= this.trueHeight(); y += CELL_SIZE) {
       this.context.moveTo(this.toScreenX(0), this.toScreenY(y));
       this.context.lineTo(this.toScreenX(this.trueWidth()), this.toScreenY(y));
     }
     this.context.stroke();
+  }
+
+  private _drawCells(): void {
+    this.context.fillStyle = "#111";
+    this.cells.forEach(([cellX, cellY]) => {
+      this.context.fillRect(
+        this.toScreenX(cellX * CELL_SIZE),
+        this.toScreenY(cellY * CELL_SIZE),
+        CELL_SIZE * this.scale,
+        CELL_SIZE * this.scale
+      );
+    });
   }
 }
