@@ -33,7 +33,7 @@ export default function ColorPickerBar({
           onUpdateValue(e);
         }
       }}
-      className="w-full h-[24px] relative overflow-hidden"
+      className="w-full h-[36px] relative overflow-hidden"
       style={
         {
           "--x": `${value}px`,
@@ -41,7 +41,7 @@ export default function ColorPickerBar({
         } as React.CSSProperties
       }
     >
-      <button className="absolute w-[12px] origin-center rounded-full h-[12px] border-2 border-black left-[-6px] top-[6px] translate-x-[var(--x)]" />
+      <button className="absolute w-[18px] origin-center rounded-full h-[18px] border-2 border-black left-[-9px] top-[9px] translate-x-[var(--x)]" />
     </div>
   );
 }
