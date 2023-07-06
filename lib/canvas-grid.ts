@@ -11,8 +11,8 @@ export class CanvasGrid {
   pixelWidth: number;
   pixelHeight: number;
 
-  canvas: HTMLCanvasElement;
-  context: CanvasRenderingContext2D;
+  canvas: HTMLCanvasElement | null = null;
+  context: CanvasRenderingContext2D | null = null;
 
   touchMode: "single" | "double" = "single";
   prevTouch: [React.Touch | null, React.Touch | null] = [null, null];
@@ -26,28 +26,34 @@ export class CanvasGrid {
     pixelWidth: number;
     pixelHeight: number;
   }) {
-    this.canvas = document.getElementById("canvas")! as HTMLCanvasElement;
-    this.context = this.canvas.getContext("2d")!;
-
     this.pixelWidth = pixelWidth;
     this.pixelHeight = pixelHeight;
+    this.recenter();
+  }
 
-    const padding = 2;
-    this.scale =
-      document.body.clientWidth / (CELL_SIZE * (pixelWidth + padding * 2));
-    this.offsetX += CELL_SIZE * padding;
-    this.offsetY += CELL_SIZE * padding;
+  init(): void {
+    const canvas = document.getElementById(
+      "canvas"
+    ) as HTMLCanvasElement | null;
+    const context = canvas?.getContext("2d");
+    if (canvas && context) {
+      this.canvas = canvas;
+      this.context = context;
+      this.draw();
+    }
   }
 
   draw(): void {
-    this.canvas.width = document.body.clientWidth;
-    this.canvas.height = document.body.clientHeight;
-    this.context.clearRect(0, 0, this.canvas.width, this.canvas.height);
+    if (this.canvas && this.context) {
+      this.canvas.width = document.body.clientWidth;
+      this.canvas.height = document.body.clientHeight;
+      this.context.clearRect(0, 0, this.canvas.width, this.canvas.height);
 
-    this._drawGrid();
-    this._drawPixelArea();
-    this._drawCells();
-    this._drawPreview();
+      this._drawGrid();
+      this._drawPixelArea();
+      this._drawCells();
+      this._drawPreview();
+    }
   }
 
   toScreenX(xTrue: number): number {
@@ -64,11 +70,11 @@ export class CanvasGrid {
   }
 
   trueHeight(): number {
-    return this.canvas.clientHeight / this.scale;
+    return (this.canvas?.clientHeight ?? 0) / this.scale;
   }
 
   trueWidth(): number {
-    return this.canvas.clientWidth / this.scale;
+    return (this.canvas?.clientWidth ?? 0) / this.scale;
   }
 
   zoom(amount: number): void {
@@ -81,6 +87,14 @@ export class CanvasGrid {
 
   resizeY(pixelSize: number): void {
     this.pixelHeight = pixelSize;
+  }
+
+  recenter(): void {
+    const padding = 2;
+    this.scale =
+      document.body.clientWidth / (CELL_SIZE * (this.pixelWidth + padding * 2));
+    this.offsetX = CELL_SIZE * padding;
+    this.offsetY = CELL_SIZE * padding;
   }
 
   addCellAt(
@@ -110,6 +124,8 @@ export class CanvasGrid {
             this.cells.set(mapCellKey, { color });
           }
         }
+      } else if (mode === "centering") {
+        this.recenter();
       }
 
       this.draw();
@@ -136,61 +152,67 @@ export class CanvasGrid {
   }
 
   private _drawGrid(): void {
-    this.context.strokeStyle = "rgb(229,231,235)";
-    this.context.lineWidth = 1;
-    this.context.beginPath();
+    if (this.canvas && this.context) {
+      this.context.strokeStyle = "rgb(229,231,235)";
+      this.context.lineWidth = 1;
+      this.context.beginPath();
 
-    const minX = this.toScreenX(0);
-    const minY = this.toScreenY(0);
-    const maxX = this.toScreenY(CELL_SIZE * this.pixelWidth);
-    const maxY = this.toScreenX(CELL_SIZE * this.pixelHeight);
-    for (let x = minX; x <= maxX; x += CELL_SIZE * this.scale) {
-      const source = x;
-      this.context.moveTo(source, minY);
-      this.context.lineTo(source, maxY);
-    }
+      const minX = this.toScreenX(0);
+      const minY = this.toScreenY(0);
+      const maxX = this.toScreenY(CELL_SIZE * this.pixelWidth);
+      const maxY = this.toScreenX(CELL_SIZE * this.pixelHeight);
+      for (let x = minX; x <= maxX; x += CELL_SIZE * this.scale) {
+        const source = x;
+        this.context.moveTo(source, minY);
+        this.context.lineTo(source, maxY);
+      }
 
-    for (let y = minY; y <= maxY; y += CELL_SIZE * this.scale) {
-      const destination = y;
-      this.context.moveTo(minX, destination);
-      this.context.lineTo(maxX, destination);
+      for (let y = minY; y <= maxY; y += CELL_SIZE * this.scale) {
+        const destination = y;
+        this.context.moveTo(minX, destination);
+        this.context.lineTo(maxX, destination);
+      }
+      this.context.stroke();
     }
-    this.context.stroke();
   }
 
   private _drawCells(): void {
     Array.from(this.cells.entries()).forEach(([cellKey, { color }]) => {
-      const [cellX, cellY] = fromCellKey(cellKey);
-      this.context.fillStyle = `hsl(${color[0]}deg ${color[1]}% ${color[2]}%)`;
-      this.context.fillRect(
-        this.toScreenX(cellX * CELL_SIZE),
-        this.toScreenY(cellY * CELL_SIZE),
-        CELL_SIZE * this.scale,
-        CELL_SIZE * this.scale
-      );
+      if (this.canvas && this.context) {
+        const [cellX, cellY] = fromCellKey(cellKey);
+        this.context.fillStyle = `hsl(${color[0]}deg ${color[1]}% ${color[2]}%)`;
+        this.context.fillRect(
+          this.toScreenX(cellX * CELL_SIZE),
+          this.toScreenY(cellY * CELL_SIZE),
+          CELL_SIZE * this.scale,
+          CELL_SIZE * this.scale
+        );
+      }
     });
   }
 
   private _drawPixelArea(): void {
-    this.context.strokeStyle = "rgb(209,213,219)";
-    this.context.lineWidth = 4;
+    if (this.canvas && this.context) {
+      this.context.strokeStyle = "rgb(209,213,219)";
+      this.context.lineWidth = 4;
 
-    this.context.beginPath();
-    this.context.moveTo(this.toScreenX(0), this.toScreenY(0));
-    this.context.lineTo(
-      this.toScreenX(0),
-      this.toScreenY(CELL_SIZE * this.pixelWidth)
-    );
-    this.context.lineTo(
-      this.toScreenX(CELL_SIZE * this.pixelHeight),
-      this.toScreenY(CELL_SIZE * this.pixelWidth)
-    );
-    this.context.lineTo(
-      this.toScreenX(CELL_SIZE * this.pixelHeight),
-      this.toScreenY(0)
-    );
-    this.context.closePath();
-    this.context.stroke();
+      this.context.beginPath();
+      this.context.moveTo(this.toScreenX(0), this.toScreenY(0));
+      this.context.lineTo(
+        this.toScreenX(0),
+        this.toScreenY(CELL_SIZE * this.pixelWidth)
+      );
+      this.context.lineTo(
+        this.toScreenX(CELL_SIZE * this.pixelHeight),
+        this.toScreenY(CELL_SIZE * this.pixelWidth)
+      );
+      this.context.lineTo(
+        this.toScreenX(CELL_SIZE * this.pixelHeight),
+        this.toScreenY(0)
+      );
+      this.context.closePath();
+      this.context.stroke();
+    }
   }
 
   private _drawPreview(): void {

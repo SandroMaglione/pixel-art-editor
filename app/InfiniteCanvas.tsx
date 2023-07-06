@@ -1,27 +1,21 @@
 import { CanvasGrid } from "@/lib/canvas-grid";
 import { ColorHSL, EditorMode } from "@/lib/types";
-import { ReactElement, useEffect, useRef } from "react";
+import { ReactElement, useEffect } from "react";
 
 interface InfiniteCanvasProps {
-  pixelWidth: number;
-  pixelHeight: number;
   color: ColorHSL;
   mode: EditorMode;
   onColorPick: (color: ColorHSL) => void;
+  canvasGrid: CanvasGrid;
 }
 
 export default function InfiniteCanvas({
-  pixelHeight,
-  pixelWidth,
   color,
   mode,
+  canvasGrid,
   onColorPick,
 }: InfiniteCanvasProps): ReactElement {
-  const canvasGridRef = useRef<CanvasGrid | null>(null);
-
   const onTouchDraw = (event: React.TouchEvent<HTMLCanvasElement>) => {
-    const canvasGrid = canvasGridRef.current!;
-
     // get first touch coordinates
     const touch0X = event.touches[0].pageX;
     const touch0Y = event.touches[0].pageY;
@@ -71,8 +65,8 @@ export default function InfiniteCanvas({
       // Get the relative position of the middle of the zoom.
       // 0, 0 would be top left.
       // 0, 1 would be top right etc.
-      var zoomRatioX = midX / canvasGrid.canvas.clientWidth;
-      var zoomRatioY = midY / canvasGrid.canvas.clientHeight;
+      var zoomRatioX = midX / (canvasGrid.canvas?.clientWidth ?? 1);
+      var zoomRatioY = midY / (canvasGrid.canvas?.clientHeight ?? 1);
 
       // calculate the amounts zoomed from each edge of the screen
       const unitsZoomedX = canvasGrid.trueWidth() * scaleAmount;
@@ -92,7 +86,6 @@ export default function InfiniteCanvas({
   };
 
   const onTouchStart = (event: React.TouchEvent<HTMLCanvasElement>) => {
-    const canvasGrid = canvasGridRef.current!;
     if (event.touches.length == 1) {
       canvasGrid.touchMode = "single";
     } else if (event.touches.length >= 2) {
@@ -107,6 +100,8 @@ export default function InfiniteCanvas({
   };
 
   useEffect(() => {
+    canvasGrid.init();
+
     document.addEventListener(
       "contextmenu",
       function (e) {
@@ -124,12 +119,6 @@ export default function InfiniteCanvas({
         false
       );
   }, []);
-
-  useEffect(() => {
-    const cg = new CanvasGrid({ pixelHeight, pixelWidth });
-    cg.draw();
-    canvasGridRef.current = cg;
-  }, [pixelHeight, pixelWidth]);
 
   return (
     <div className="touch-none select-none fixed bg-gray-50 inset-0 w-full h-full">
