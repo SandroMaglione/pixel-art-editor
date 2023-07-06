@@ -47,6 +47,7 @@ export class CanvasGrid {
     this._drawGrid();
     this._drawPixelArea();
     this._drawCells();
+    this._drawPreview();
   }
 
   toScreenX(xTrue: number): number {
@@ -106,7 +107,8 @@ export class CanvasGrid {
   }
 
   private _drawGrid(): void {
-    this.context.strokeStyle = "#e1e1e1";
+    this.context.strokeStyle = "rgb(229,231,235)";
+    this.context.lineWidth = 1;
     this.context.beginPath();
 
     for (
@@ -145,7 +147,8 @@ export class CanvasGrid {
   }
 
   private _drawPixelArea(): void {
-    this.context.strokeStyle = "#0000ff";
+    this.context.strokeStyle = "rgb(209,213,219)";
+    this.context.lineWidth = 4;
 
     this.context.beginPath();
     this.context.moveTo(this.toScreenX(0), this.toScreenY(0));
@@ -163,5 +166,24 @@ export class CanvasGrid {
     );
     this.context.closePath();
     this.context.stroke();
+  }
+
+  private _drawPreview(): void {
+    const canvasPreview = document.getElementById(
+      "preview"
+    )! as HTMLCanvasElement;
+    const contextPreview = canvasPreview.getContext("2d")!;
+
+    const cellSize = canvasPreview.width / this.pixelWidth;
+    Array.from(this.cells.entries()).forEach(([cellKey, { color }]) => {
+      const [cellX, cellY] = fromCellKey(cellKey);
+      contextPreview.fillStyle = `hsl(${color[0]}deg ${color[1]}% ${color[2]}%)`;
+      contextPreview.fillRect(
+        cellX * cellSize,
+        cellY * cellSize,
+        cellSize,
+        cellSize
+      );
+    });
   }
 }

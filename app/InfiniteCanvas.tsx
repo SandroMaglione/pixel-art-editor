@@ -92,6 +92,21 @@ export default function InfiniteCanvas({
     canvasGrid.prevTouch[1] = event.touches[1];
   };
 
+  const onTouchStart = (event: React.TouchEvent<HTMLCanvasElement>) => {
+    const canvasGrid = canvasGridRef.current!;
+    if (event.touches.length == 1) {
+      canvasGrid.touchMode = "single";
+    } else if (event.touches.length >= 2) {
+      canvasGrid.touchMode = "double";
+    }
+
+    // store the last touches
+    canvasGrid.prevTouch[0] = event.touches[0];
+    canvasGrid.prevTouch[1] = event.touches[1];
+
+    onTouchDraw(event);
+  };
+
   useEffect(() => {
     document.addEventListener(
       "contextmenu",
@@ -118,25 +133,18 @@ export default function InfiniteCanvas({
   }, [pixelHeight, pixelWidth]);
 
   return (
-    <div className="touch-none select-none fixed inset-0 w-full h-full">
+    <div className="touch-none select-none fixed bg-gray-50 inset-0 w-full h-full">
       <canvas
         id="canvas"
-        className="bg-gray-100"
-        onTouchStart={(event) => {
-          const canvasGrid = canvasGridRef.current!;
-          if (event.touches.length == 1) {
-            canvasGrid.touchMode = "single";
-          } else if (event.touches.length >= 2) {
-            canvasGrid.touchMode = "double";
-          }
-
-          // store the last touches
-          canvasGrid.prevTouch[0] = event.touches[0];
-          canvasGrid.prevTouch[1] = event.touches[1];
-
-          onTouchDraw(event);
-        }}
+        onTouchStart={onTouchStart}
         onTouchMove={onTouchDraw}
+      ></canvas>
+
+      <canvas
+        id="preview"
+        width={50}
+        height={50}
+        className="absolute top-4 right-4 bg-gray-50 border-4 border-gray-300"
       ></canvas>
     </div>
   );
