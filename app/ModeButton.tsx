@@ -21,8 +21,10 @@ export default function ModeButton({
       type="button"
       onClick={() => onClick(mode)}
       className={clsx(
-        isSelected ? "bg-indigo-600 text-white" : "bg-gray-100 text-gray-800",
-        "border border-black w-12 h-12 flex items-center justify-center"
+        isSelected
+          ? "bg-indigo-500 text-white"
+          : "bg-gray-100 text-gray-600 border-gray-300",
+        "border w-8 h-8 flex items-center justify-center"
       )}
     >
       {children}

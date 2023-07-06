@@ -1,4 +1,5 @@
-import { ColorHSL } from "./types";
+import { eqColor, fromCellKey, toCellKey } from "./helpers";
+import { CellKey, ColorHSL, EditorMode } from "./types";
 
 const CELL_SIZE = 40;
 
@@ -16,7 +17,7 @@ export class CanvasGrid {
   touchMode: "single" | "double" = "single";
   prevTouch: [React.Touch | null, React.Touch | null] = [null, null];
 
-  cells: [number, number, ColorHSL][] = [];
+  cells: Map<CellKey, { color: ColorHSL }> = new Map();
 
   constructor({
     pixelHeight,
@@ -81,12 +82,25 @@ export class CanvasGrid {
     this.pixelHeight = pixelSize;
   }
 
-  addCellAt(touchX: number, touchY: number, color: ColorHSL): void {
+  addCellAt(
+    touchX: number,
+    touchY: number,
+    color: ColorHSL,
+    mode: EditorMode
+  ): void {
     // TODO: Make cells in array unique, add color to them, make searching near cells easier
     const x = Math.floor(this.toTrueX(touchX) / CELL_SIZE);
     const y = Math.floor(this.toTrueY(touchY) / CELL_SIZE);
     if (x >= 0 && y >= 0 && x < this.pixelWidth && y < this.pixelHeight) {
-      this.cells.push([x, y, color]);
+      const cellKey = toCellKey(x, y);
+      const findCell = this.cells.get(cellKey);
+      if (mode === "color" && (!findCell || !eqColor(findCell.color, color))) {
+        this.cells.set(cellKey, { color });
+      } else if (mode === "erase" && findCell) {
+        this.cells.delete(cellKey);
+      } else if (mode === "picker" && findCell) {
+        // TODO: Picked
+      }
     }
   }
 
@@ -117,7 +131,8 @@ export class CanvasGrid {
   }
 
   private _drawCells(): void {
-    this.cells.forEach(([cellX, cellY, color]) => {
+    Array.from(this.cells.entries()).forEach(([cellKey, { color }]) => {
+      const [cellX, cellY] = fromCellKey(cellKey);
       this.context.fillStyle = `hsl(${color[0]}deg ${color[1]}% ${color[2]}%)`;
       this.context.fillRect(
         this.toScreenX(cellX * CELL_SIZE),

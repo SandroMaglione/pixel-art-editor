@@ -1,19 +1,40 @@
 import { CanvasGrid } from "@/lib/canvas-grid";
-import { ColorHSL } from "@/lib/types";
+import { ColorHSL, EditorMode } from "@/lib/types";
 import { ReactElement, useEffect, useRef } from "react";
 
 interface InfiniteCanvasProps {
   pixelWidth: number;
   pixelHeight: number;
   color: ColorHSL;
+  mode: EditorMode;
 }
 
 export default function InfiniteCanvas({
   pixelHeight,
   pixelWidth,
   color,
+  mode,
 }: InfiniteCanvasProps): ReactElement {
   const canvasGridRef = useRef<CanvasGrid | null>(null);
+
+  useEffect(() => {
+    document.addEventListener(
+      "contextmenu",
+      function (e) {
+        e.preventDefault();
+      },
+      false
+    );
+
+    return () =>
+      document.removeEventListener(
+        "contextmenu",
+        function (e) {
+          e.preventDefault();
+        },
+        false
+      );
+  }, []);
 
   useEffect(() => {
     const cg = new CanvasGrid({ pixelHeight, pixelWidth });
@@ -55,7 +76,7 @@ export default function InfiniteCanvas({
           const prevScaledY = canvasGrid.toTrueY(prevTouch0Y);
 
           if (canvasGrid.touchMode === "single") {
-            canvasGrid.addCellAt(touch0X, touch0Y, color);
+            canvasGrid.addCellAt(touch0X, touch0Y, color, mode);
             canvasGrid.draw();
           } else if (canvasGrid.touchMode === "double") {
             // get second touch coordinates

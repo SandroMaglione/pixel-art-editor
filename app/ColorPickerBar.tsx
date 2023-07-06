@@ -1,28 +1,40 @@
 "use client";
 import { clamp, lerp } from "@/lib/helpers";
-import { ReactElement, useState } from "react";
+import { ReactElement, useCallback, useState } from "react";
 
 interface ColorPickerBarProps {
-  onValueChange: (percentage: number) => void;
+  /** 0-100 */
+  value: number;
+  onValueChange: (value: number) => void;
   style: React.CSSProperties;
 }
 
 export default function ColorPickerBar({
   onValueChange,
   style,
+  value,
 }: ColorPickerBarProps): ReactElement {
   const [isClicking, setIsClicking] = useState(false);
-  const [value, setValue] = useState(0);
+  const [width, setWidth] = useState(0);
+
+  const barValue = lerp(0, width, value);
+
+  const measuredRef = useCallback((node: HTMLDivElement) => {
+    if (node !== null) {
+      setWidth(node.getBoundingClientRect().width);
+    }
+  }, []);
+
   const onUpdateValue = (e: React.TouchEvent<HTMLDivElement>) => {
     const clientX = e.touches[0].clientX;
     const { left, width } = e.currentTarget.getBoundingClientRect();
     const percentage = clamp(0, 1)((clientX - left) / (width - left));
-    setValue(lerp(0, width, percentage));
     onValueChange(percentage);
   };
 
   return (
     <div
+      ref={measuredRef}
       onTouchEnd={() => setIsClicking(false)}
       onTouchStart={(e) => {
         setIsClicking(true);
@@ -36,7 +48,7 @@ export default function ColorPickerBar({
       className="w-full h-[36px] relative overflow-hidden"
       style={
         {
-          "--x": `${value}px`,
+          "--x": `${barValue}px`,
           ...style,
         } as React.CSSProperties
       }
