@@ -31,7 +31,6 @@ export default function InfiniteCanvas({
 
     if (canvasGrid.touchMode === "single") {
       canvasGrid.addCellAt(touch0X, touch0Y, color, mode, onColorPick);
-      canvasGrid.draw();
     } else if (canvasGrid.touchMode === "double") {
       // get second touch coordinates
       const touch1X = event.touches[1].pageX;

@@ -102,6 +102,26 @@ export default function Home() {
               <path d="M22 20a2 2 0 1 1-4 0c0-1.6 1.7-2.4 2-4 .3 1.6 2 2.4 2 4Z" />
             </svg>
           </ModeButton>
+          <ModeButton mode="swap-color" onClick={setMode} currentMode={mode}>
+            <svg
+              xmlns="http://www.w3.org/2000/svg"
+              viewBox="0 0 24 24"
+              fill="none"
+              stroke="currentColor"
+              strokeWidth="2"
+              strokeLinecap="round"
+              strokeLinejoin="round"
+              className="w-4 h-4"
+            >
+              <path d="M14 4c0-1.1.9-2 2-2" />
+              <path d="M20 2c1.1 0 2 .9 2 2" />
+              <path d="M22 8c0 1.1-.9 2-2 2" />
+              <path d="M16 10c-1.1 0-2-.9-2-2" />
+              <path d="m3 7 3 3 3-3" />
+              <path d="M6 10V5c0-1.7 1.3-3 3-3h1" />
+              <rect width="8" height="8" x="2" y="14" rx="2" />
+            </svg>
+          </ModeButton>
         </div>
 
         <div

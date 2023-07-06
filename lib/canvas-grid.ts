@@ -103,7 +103,16 @@ export class CanvasGrid {
         onColorPick(findCell.color);
       } else if (mode === "fill") {
         this._fill(x, y, color, findCell?.color ?? null);
+      } else if (mode === "swap-color" && findCell) {
+        const entries = this.cells.entries();
+        for (const [mapCellKey, value] of entries) {
+          if (eqColor(value.color, findCell.color)) {
+            this.cells.set(mapCellKey, { color });
+          }
+        }
       }
+
+      this.draw();
     }
   }
 
@@ -189,6 +198,8 @@ export class CanvasGrid {
       "preview"
     )! as HTMLCanvasElement;
     const contextPreview = canvasPreview.getContext("2d")!;
+
+    contextPreview.clearRect(0, 0, canvasPreview.width, canvasPreview.height);
 
     const cellSize = canvasPreview.width / this.pixelWidth;
     Array.from(this.cells.entries()).forEach(([cellKey, { color }]) => {
