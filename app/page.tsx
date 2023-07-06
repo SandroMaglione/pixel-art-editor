@@ -4,6 +4,7 @@ import { CanvasGrid } from "@/lib/canvas-grid";
 import { lerp } from "@/lib/helpers";
 import { ColorHSL, EditorMode } from "@/lib/types";
 import { useRef, useState } from "react";
+import ActionButton from "./ActionButton";
 import ColorPickerBar from "./ColorPickerBar";
 import InfiniteCanvas from "./InfiniteCanvas";
 import ModeButton from "./ModeButton";
@@ -128,7 +129,10 @@ export default function Home() {
             </ModeButton>
           </div>
           <div className="flex justify-end">
-            <ModeButton mode="centering" onClick={setMode} currentMode={mode}>
+            <ActionButton
+              action="centering"
+              onClick={() => canvasGridRef.current.recenter()}
+            >
               <svg
                 xmlns="http://www.w3.org/2000/svg"
                 viewBox="0 0 24 24"
@@ -143,7 +147,7 @@ export default function Home() {
                 <path d="M4 22V2" />
                 <path d="M20 22V2" />
               </svg>
-            </ModeButton>
+            </ActionButton>
           </div>
         </div>
 

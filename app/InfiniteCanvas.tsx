@@ -118,7 +118,7 @@ export default function InfiniteCanvas({
         },
         false
       );
-  }, []);
+  }, [canvasGrid]);
 
   return (
     <div className="touch-none select-none fixed bg-gray-50 inset-0 w-full h-full">

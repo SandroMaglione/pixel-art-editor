@@ -95,6 +95,8 @@ export class CanvasGrid {
       document.body.clientWidth / (CELL_SIZE * (this.pixelWidth + padding * 2));
     this.offsetX = CELL_SIZE * padding;
     this.offsetY = CELL_SIZE * padding;
+
+    this.draw();
   }
 
   addCellAt(
@@ -124,8 +126,6 @@ export class CanvasGrid {
             this.cells.set(mapCellKey, { color });
           }
         }
-      } else if (mode === "centering") {
-        this.recenter();
       }
 
       this.draw();
