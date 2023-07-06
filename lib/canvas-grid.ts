@@ -102,6 +102,27 @@ export class CanvasGrid {
         this.cells.delete(cellKey);
       } else if (mode === "picker" && findCell) {
         onColorPick(findCell.color);
+      } else if (mode === "fill") {
+        this._fill(x, y, color, findCell?.color ?? null);
+      }
+    }
+  }
+
+  private _fill(
+    x: number,
+    y: number,
+    newColor: ColorHSL,
+    sourceColor: ColorHSL | null
+  ): void {
+    if (x >= 0 && x < this.pixelWidth && y >= 0 && y <= this.pixelHeight) {
+      const cellKey = toCellKey(x, y);
+      const findCell = this.cells.get(cellKey);
+      if (!findCell || (sourceColor && eqColor(sourceColor, findCell.color))) {
+        this.cells.set(cellKey, { color: newColor });
+        this._fill(x - 1, y, newColor, sourceColor);
+        this._fill(x + 1, y, newColor, sourceColor);
+        this._fill(x, y - 1, newColor, sourceColor);
+        this._fill(x, y + 1, newColor, sourceColor);
       }
     }
   }
