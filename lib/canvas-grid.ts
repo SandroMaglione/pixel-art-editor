@@ -168,8 +168,8 @@ export class CanvasGrid {
 
       const minX = this.toScreenX(0);
       const minY = this.toScreenY(0);
-      const maxX = this.toScreenY(CELL_SIZE * this.pixelWidth);
-      const maxY = this.toScreenX(CELL_SIZE * this.pixelHeight);
+      const maxX = this.toScreenX(CELL_SIZE * this.pixelWidth);
+      const maxY = this.toScreenY(CELL_SIZE * this.pixelHeight);
       for (let x = minX; x <= maxX; x += CELL_SIZE * this.scale) {
         const source = x;
         this.context.moveTo(source, minY);
