@@ -90,7 +90,6 @@ export class CanvasGrid {
     mode: EditorMode,
     onColorPick: (color: ColorHSL) => void
   ): void {
-    // TODO: Make cells in array unique, add color to them, make searching near cells easier
     const x = Math.floor(this.toTrueX(touchX) / CELL_SIZE);
     const y = Math.floor(this.toTrueY(touchY) / CELL_SIZE);
     if (x >= 0 && y >= 0 && x < this.pixelWidth && y < this.pixelHeight) {
@@ -114,7 +113,7 @@ export class CanvasGrid {
     newColor: ColorHSL,
     sourceColor: ColorHSL | null
   ): void {
-    if (x >= 0 && x < this.pixelWidth && y >= 0 && y <= this.pixelHeight) {
+    if (x >= 0 && x < this.pixelWidth && y >= 0 && y < this.pixelHeight) {
       const cellKey = toCellKey(x, y);
       const findCell = this.cells.get(cellKey);
       if (!findCell || (sourceColor && eqColor(sourceColor, findCell.color))) {
@@ -132,24 +131,20 @@ export class CanvasGrid {
     this.context.lineWidth = 1;
     this.context.beginPath();
 
-    for (
-      let x = (this.offsetX % CELL_SIZE) * this.scale;
-      x <= this.trueWidth();
-      x += CELL_SIZE * this.scale
-    ) {
+    const minX = this.toScreenX(0);
+    const minY = this.toScreenY(0);
+    const maxX = this.toScreenY(CELL_SIZE * this.pixelWidth);
+    const maxY = this.toScreenX(CELL_SIZE * this.pixelHeight);
+    for (let x = minX; x <= maxX; x += CELL_SIZE * this.scale) {
       const source = x;
-      this.context.moveTo(source, 0);
-      this.context.lineTo(source, this.trueHeight());
+      this.context.moveTo(source, minY);
+      this.context.lineTo(source, maxY);
     }
 
-    for (
-      let y = (this.offsetY % CELL_SIZE) * this.scale;
-      y <= this.trueHeight();
-      y += CELL_SIZE * this.scale
-    ) {
+    for (let y = minY; y <= maxY; y += CELL_SIZE * this.scale) {
       const destination = y;
-      this.context.moveTo(0, destination);
-      this.context.lineTo(this.trueWidth(), destination);
+      this.context.moveTo(minX, destination);
+      this.context.lineTo(maxX, destination);
     }
     this.context.stroke();
   }
