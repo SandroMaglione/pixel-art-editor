@@ -28,7 +28,6 @@ export class CanvasGrid {
   }) {
     this.pixelWidth = pixelWidth;
     this.pixelHeight = pixelHeight;
-    this.recenter();
   }
 
   init(): void {
@@ -39,6 +38,7 @@ export class CanvasGrid {
     if (canvas && context) {
       this.canvas = canvas;
       this.context = context;
+      this.recenter();
       this.draw();
     }
   }
