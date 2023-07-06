@@ -207,14 +207,14 @@ export class CanvasGrid {
       this.context.moveTo(this.toScreenX(0), this.toScreenY(0));
       this.context.lineTo(
         this.toScreenX(0),
-        this.toScreenY(CELL_SIZE * this.pixelWidth)
+        this.toScreenY(CELL_SIZE * this.pixelHeight)
       );
       this.context.lineTo(
-        this.toScreenX(CELL_SIZE * this.pixelHeight),
-        this.toScreenY(CELL_SIZE * this.pixelWidth)
+        this.toScreenX(CELL_SIZE * this.pixelWidth),
+        this.toScreenY(CELL_SIZE * this.pixelHeight)
       );
       this.context.lineTo(
-        this.toScreenX(CELL_SIZE * this.pixelHeight),
+        this.toScreenX(CELL_SIZE * this.pixelWidth),
         this.toScreenY(0)
       );
       this.context.closePath();
