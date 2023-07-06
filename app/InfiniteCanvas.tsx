@@ -130,8 +130,6 @@ export default function InfiniteCanvas({
 
       <canvas
         id="preview"
-        width={50}
-        height={50}
         className="absolute top-4 right-4 bg-gray-50 border-4 border-gray-300"
       ></canvas>
     </div>

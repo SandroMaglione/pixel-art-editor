@@ -2,6 +2,8 @@ import { eqColor, fromCellKey, toCellKey } from "./helpers";
 import { CellKey, ColorHSL, EditorMode } from "./types";
 
 const CELL_SIZE = 40;
+const PREVIEW_MAX_WIDTH = 50; // px
+const PREVIEW_MAX_HEIGHT = 100; // px
 
 export class CanvasGrid {
   scale: number = 1;
@@ -227,10 +229,19 @@ export class CanvasGrid {
       "preview"
     )! as HTMLCanvasElement;
     const contextPreview = canvasPreview.getContext("2d")!;
+    canvasPreview.width = PREVIEW_MAX_WIDTH;
+    let cellSize = canvasPreview.width / this.pixelWidth;
+    const newHeight = cellSize * this.pixelHeight;
+    if (newHeight > PREVIEW_MAX_HEIGHT) {
+      canvasPreview.height = PREVIEW_MAX_HEIGHT;
+      cellSize = canvasPreview.height / this.pixelHeight;
+      canvasPreview.width = cellSize * this.pixelWidth;
+    } else {
+      canvasPreview.height = cellSize * this.pixelHeight;
+    }
 
     contextPreview.clearRect(0, 0, canvasPreview.width, canvasPreview.height);
 
-    const cellSize = canvasPreview.width / this.pixelWidth;
     Array.from(this.cells.entries()).forEach(([cellKey, { color }]) => {
       const [cellX, cellY] = fromCellKey(cellKey);
       contextPreview.fillStyle = `hsl(${color[0]}deg ${color[1]}% ${color[2]}%)`;
