@@ -66,15 +66,26 @@ export class CanvasGrid {
 
   private _drawGrid(): void {
     this.context.strokeStyle = "#e1e1e1";
-    this.context.beginPath();
-    for (let x = 0; x <= this.trueWidth(); x += CELL_SIZE) {
-      this.context.moveTo(this.toScreenX(x), 0);
-      this.context.lineTo(this.toScreenX(x), this.toScreenX(this.trueHeight()));
+    this.context.fillStyle = "#0000ff";
+
+    for (
+      let x = (this.offsetX % CELL_SIZE) * this.scale;
+      x <= this.trueWidth();
+      x += CELL_SIZE * this.scale
+    ) {
+      const source = x;
+      this.context.moveTo(source, 0);
+      this.context.lineTo(source, this.trueHeight());
     }
 
-    for (let y = 0; y <= this.trueHeight(); y += CELL_SIZE) {
-      this.context.moveTo(0, this.toScreenY(y));
-      this.context.lineTo(this.toScreenX(this.trueWidth()), this.toScreenY(y));
+    for (
+      let y = (this.offsetY % CELL_SIZE) * this.scale;
+      y <= this.trueHeight();
+      y += CELL_SIZE * this.scale
+    ) {
+      const destination = y;
+      this.context.moveTo(0, destination);
+      this.context.lineTo(this.trueWidth(), destination);
     }
     this.context.stroke();
   }

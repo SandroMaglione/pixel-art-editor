@@ -26,6 +26,8 @@ export default function InfiniteCanvas(): ReactElement {
           canvasGrid.prevTouch[1] = event.touches[1];
 
           canvasGrid.zoom(0.99);
+          canvasGrid.offsetX += 10;
+          canvasGrid.offsetY += 10;
           canvasGrid.draw();
         }}
         onTouchMove={(event) => {
