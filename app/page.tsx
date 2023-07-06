@@ -1,15 +1,22 @@
 "use client";
 
+import { CanvasGrid } from "@/lib/canvas-grid";
 import { lerp } from "@/lib/helpers";
 import { ColorHSL, EditorMode } from "@/lib/types";
-import { useState } from "react";
+import { useRef, useState } from "react";
+import ActionButton from "./ActionButton";
 import ColorPickerBar from "./ColorPickerBar";
 import InfiniteCanvas from "./InfiniteCanvas";
 import ModeButton from "./ModeButton";
+import Resize from "./Resize";
 
 export default function Home() {
+  const canvasGridRef = useRef<CanvasGrid>(
+    new CanvasGrid({ pixelHeight: 16, pixelWidth: 16 })
+  );
   const [color, setColor] = useState<[number, number, number]>([0, 1, 0.5]);
   const [mode, setMode] = useState<EditorMode>("color");
+  const [isResizing, setIsResizing] = useState(false);
   const colorHSL: ColorHSL = [
     lerp(0, 365, color[0]),
     lerp(0, 100, color[1]),
@@ -23,8 +30,7 @@ export default function Home() {
   return (
     <main className="absolute inset-0 overflow-hidden flex flex-col">
       <InfiniteCanvas
-        pixelHeight={16}
-        pixelWidth={16}
+        canvasGrid={canvasGridRef.current}
         color={colorHSL}
         mode={mode}
         onColorPick={(pickedColor) =>
@@ -37,54 +43,131 @@ export default function Home() {
       />
 
       <div className="fixed bottom-0 inset-x-0 px-4 pb-4">
-        <div className="flex mb-1">
-          <ModeButton mode="color" onClick={setMode} currentMode={mode}>
-            <svg
-              xmlns="http://www.w3.org/2000/svg"
-              viewBox="0 0 24 24"
-              fill="none"
-              stroke="currentColor"
-              strokeWidth="2"
-              strokeLinecap="round"
-              strokeLinejoin="round"
-              className="w-4 h-4"
+        <div className="flex items-center justify-between mb-1">
+          <div className="flex">
+            <ModeButton mode="color" onClick={setMode} currentMode={mode}>
+              <svg
+                xmlns="http://www.w3.org/2000/svg"
+                viewBox="0 0 24 24"
+                fill="none"
+                stroke="currentColor"
+                strokeWidth="2"
+                strokeLinecap="round"
+                strokeLinejoin="round"
+                className="w-4 h-4"
+              >
+                <path d="m9.06 11.9 8.07-8.06a2.85 2.85 0 1 1 4.03 4.03l-8.06 8.08" />
+                <path d="M7.07 14.94c-1.66 0-3 1.35-3 3.02 0 1.33-2.5 1.52-2 2.02 1.08 1.1 2.49 2.02 4 2.02 2.2 0 4-1.8 4-4.04a3.01 3.01 0 0 0-3-3.02z" />
+              </svg>
+            </ModeButton>
+            <ModeButton mode="picker" onClick={setMode} currentMode={mode}>
+              <svg
+                xmlns="http://www.w3.org/2000/svg"
+                viewBox="0 0 24 24"
+                fill="none"
+                stroke="currentColor"
+                strokeWidth="2"
+                strokeLinecap="round"
+                strokeLinejoin="round"
+                className="w-4 h-4"
+              >
+                <path d="m2 22 1-1h3l9-9" />
+                <path d="M3 21v-3l9-9" />
+                <path d="m15 6 3.4-3.4a2.1 2.1 0 1 1 3 3L18 9l.4.4a2.1 2.1 0 1 1-3 3l-3.8-3.8a2.1 2.1 0 1 1 3-3l.4.4Z" />
+              </svg>
+            </ModeButton>
+            <ModeButton mode="erase" onClick={setMode} currentMode={mode}>
+              <svg
+                xmlns="http://www.w3.org/2000/svg"
+                viewBox="0 0 24 24"
+                fill="none"
+                stroke="currentColor"
+                strokeWidth="2"
+                strokeLinecap="round"
+                strokeLinejoin="round"
+                className="w-4 h-4"
+              >
+                <path d="m7 21-4.3-4.3c-1-1-1-2.5 0-3.4l9.6-9.6c1-1 2.5-1 3.4 0l5.6 5.6c1 1 1 2.5 0 3.4L13 21" />
+                <path d="M22 21H7" />
+                <path d="m5 11 9 9" />
+              </svg>
+            </ModeButton>
+            <ModeButton mode="fill" onClick={setMode} currentMode={mode}>
+              <svg
+                xmlns="http://www.w3.org/2000/svg"
+                viewBox="0 0 24 24"
+                fill="none"
+                stroke="currentColor"
+                strokeWidth="2"
+                strokeLinecap="round"
+                strokeLinejoin="round"
+                className="w-4 h-4"
+              >
+                <path d="m19 11-8-8-8.6 8.6a2 2 0 0 0 0 2.8l5.2 5.2c.8.8 2 .8 2.8 0L19 11Z" />
+                <path d="m5 2 5 5" />
+                <path d="M2 13h15" />
+                <path d="M22 20a2 2 0 1 1-4 0c0-1.6 1.7-2.4 2-4 .3 1.6 2 2.4 2 4Z" />
+              </svg>
+            </ModeButton>
+            <ModeButton mode="swap-color" onClick={setMode} currentMode={mode}>
+              <svg
+                xmlns="http://www.w3.org/2000/svg"
+                viewBox="0 0 24 24"
+                fill="none"
+                stroke="currentColor"
+                strokeWidth="2"
+                strokeLinecap="round"
+                strokeLinejoin="round"
+                className="w-4 h-4"
+              >
+                <path d="M14 4c0-1.1.9-2 2-2" />
+                <path d="M20 2c1.1 0 2 .9 2 2" />
+                <path d="M22 8c0 1.1-.9 2-2 2" />
+                <path d="M16 10c-1.1 0-2-.9-2-2" />
+                <path d="m3 7 3 3 3-3" />
+                <path d="M6 10V5c0-1.7 1.3-3 3-3h1" />
+                <rect width="8" height="8" x="2" y="14" rx="2" />
+              </svg>
+            </ModeButton>
+          </div>
+          <div className="flex justify-end">
+            <ActionButton
+              action="centering"
+              onClick={() => canvasGridRef.current.recenter()}
             >
-              <path d="m9.06 11.9 8.07-8.06a2.85 2.85 0 1 1 4.03 4.03l-8.06 8.08" />
-              <path d="M7.07 14.94c-1.66 0-3 1.35-3 3.02 0 1.33-2.5 1.52-2 2.02 1.08 1.1 2.49 2.02 4 2.02 2.2 0 4-1.8 4-4.04a3.01 3.01 0 0 0-3-3.02z" />
-            </svg>
-          </ModeButton>
-          <ModeButton mode="picker" onClick={setMode} currentMode={mode}>
-            <svg
-              xmlns="http://www.w3.org/2000/svg"
-              viewBox="0 0 24 24"
-              fill="none"
-              stroke="currentColor"
-              strokeWidth="2"
-              strokeLinecap="round"
-              strokeLinejoin="round"
-              className="w-4 h-4"
-            >
-              <path d="m2 22 1-1h3l9-9" />
-              <path d="M3 21v-3l9-9" />
-              <path d="m15 6 3.4-3.4a2.1 2.1 0 1 1 3 3L18 9l.4.4a2.1 2.1 0 1 1-3 3l-3.8-3.8a2.1 2.1 0 1 1 3-3l.4.4Z" />
-            </svg>
-          </ModeButton>
-          <ModeButton mode="erase" onClick={setMode} currentMode={mode}>
-            <svg
-              xmlns="http://www.w3.org/2000/svg"
-              viewBox="0 0 24 24"
-              fill="none"
-              stroke="currentColor"
-              strokeWidth="2"
-              strokeLinecap="round"
-              strokeLinejoin="round"
-              className="w-4 h-4"
-            >
-              <path d="m7 21-4.3-4.3c-1-1-1-2.5 0-3.4l9.6-9.6c1-1 2.5-1 3.4 0l5.6 5.6c1 1 1 2.5 0 3.4L13 21" />
-              <path d="M22 21H7" />
-              <path d="m5 11 9 9" />
-            </svg>
-          </ModeButton>
+              <svg
+                xmlns="http://www.w3.org/2000/svg"
+                viewBox="0 0 24 24"
+                fill="none"
+                stroke="currentColor"
+                strokeWidth="2"
+                strokeLinecap="round"
+                strokeLinejoin="round"
+                className="w-4 h-4"
+              >
+                <rect width="6" height="10" x="9" y="7" rx="2" />
+                <path d="M4 22V2" />
+                <path d="M20 22V2" />
+              </svg>
+            </ActionButton>
+            <ActionButton action="resize" onClick={() => setIsResizing(true)}>
+              <svg
+                xmlns="http://www.w3.org/2000/svg"
+                viewBox="0 0 24 24"
+                fill="none"
+                stroke="currentColor"
+                strokeWidth="2"
+                strokeLinecap="round"
+                strokeLinejoin="round"
+                className="w-4 h-4"
+              >
+                <path d="m21 21-6-6m6 6v-4.8m0 4.8h-4.8" />
+                <path d="M3 16.2V21m0 0h4.8M3 21l6-6" />
+                <path d="M21 7.8V3m0 0h-4.8M21 3l-6 6" />
+                <path d="M3 7.8V3m0 0h4.8M3 3l6 6" />
+              </svg>
+            </ActionButton>
+          </div>
         </div>
 
         <div
@@ -126,6 +209,16 @@ export default function Home() {
           onValueChange={setLightness}
         />
       </div>
+
+      {isResizing && (
+        <Resize
+          onClose={() => setIsResizing(false)}
+          onResize={(x, y) => {
+            canvasGridRef.current.resize(x, y);
+            setIsResizing(false);
+          }}
+        />
+      )}
     </main>
   );
 }

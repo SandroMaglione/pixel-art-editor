@@ -1,27 +1,21 @@
 import { CanvasGrid } from "@/lib/canvas-grid";
 import { ColorHSL, EditorMode } from "@/lib/types";
-import { ReactElement, useEffect, useRef } from "react";
+import { ReactElement, useEffect } from "react";
 
 interface InfiniteCanvasProps {
-  pixelWidth: number;
-  pixelHeight: number;
   color: ColorHSL;
   mode: EditorMode;
   onColorPick: (color: ColorHSL) => void;
+  canvasGrid: CanvasGrid;
 }
 
 export default function InfiniteCanvas({
-  pixelHeight,
-  pixelWidth,
   color,
   mode,
+  canvasGrid,
   onColorPick,
 }: InfiniteCanvasProps): ReactElement {
-  const canvasGridRef = useRef<CanvasGrid | null>(null);
-
   const onTouchDraw = (event: React.TouchEvent<HTMLCanvasElement>) => {
-    const canvasGrid = canvasGridRef.current!;
-
     // get first touch coordinates
     const touch0X = event.touches[0].pageX;
     const touch0Y = event.touches[0].pageY;
@@ -31,7 +25,6 @@ export default function InfiniteCanvas({
 
     if (canvasGrid.touchMode === "single") {
       canvasGrid.addCellAt(touch0X, touch0Y, color, mode, onColorPick);
-      canvasGrid.draw();
     } else if (canvasGrid.touchMode === "double") {
       // get second touch coordinates
       const touch1X = event.touches[1].pageX;
@@ -72,8 +65,8 @@ export default function InfiniteCanvas({
       // Get the relative position of the middle of the zoom.
       // 0, 0 would be top left.
       // 0, 1 would be top right etc.
-      var zoomRatioX = midX / canvasGrid.canvas.clientWidth;
-      var zoomRatioY = midY / canvasGrid.canvas.clientHeight;
+      var zoomRatioX = midX / (canvasGrid.canvas?.clientWidth ?? 1);
+      var zoomRatioY = midY / (canvasGrid.canvas?.clientHeight ?? 1);
 
       // calculate the amounts zoomed from each edge of the screen
       const unitsZoomedX = canvasGrid.trueWidth() * scaleAmount;
@@ -92,7 +85,23 @@ export default function InfiniteCanvas({
     canvasGrid.prevTouch[1] = event.touches[1];
   };
 
+  const onTouchStart = (event: React.TouchEvent<HTMLCanvasElement>) => {
+    if (event.touches.length == 1) {
+      canvasGrid.touchMode = "single";
+    } else if (event.touches.length >= 2) {
+      canvasGrid.touchMode = "double";
+    }
+
+    // store the last touches
+    canvasGrid.prevTouch[0] = event.touches[0];
+    canvasGrid.prevTouch[1] = event.touches[1];
+
+    onTouchDraw(event);
+  };
+
   useEffect(() => {
+    canvasGrid.init();
+
     document.addEventListener(
       "contextmenu",
       function (e) {
@@ -109,34 +118,19 @@ export default function InfiniteCanvas({
         },
         false
       );
-  }, []);
-
-  useEffect(() => {
-    const cg = new CanvasGrid({ pixelHeight, pixelWidth });
-    cg.draw();
-    canvasGridRef.current = cg;
-  }, [pixelHeight, pixelWidth]);
+  }, [canvasGrid]);
 
   return (
-    <div className="touch-none select-none fixed inset-0 w-full h-full">
+    <div className="touch-none select-none fixed bg-gray-50 inset-0 w-full h-full">
       <canvas
         id="canvas"
-        className="bg-gray-100"
-        onTouchStart={(event) => {
-          const canvasGrid = canvasGridRef.current!;
-          if (event.touches.length == 1) {
-            canvasGrid.touchMode = "single";
-          } else if (event.touches.length >= 2) {
-            canvasGrid.touchMode = "double";
-          }
-
-          // store the last touches
-          canvasGrid.prevTouch[0] = event.touches[0];
-          canvasGrid.prevTouch[1] = event.touches[1];
-
-          onTouchDraw(event);
-        }}
+        onTouchStart={onTouchStart}
         onTouchMove={onTouchDraw}
+      ></canvas>
+
+      <canvas
+        id="preview"
+        className="absolute top-4 right-4 bg-gray-50 border-4 border-gray-300"
       ></canvas>
     </div>
   );

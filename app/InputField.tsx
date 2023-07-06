@@ -13,10 +13,14 @@ export default function InputField({
     <input
       type="number"
       min={1}
-      max={64}
-      onChange={(e) => onChange(e.target.valueAsNumber)}
-      value={value}
-      className="text-lg px-4 py-1.5 text-center"
+      max={256}
+      required
+      onChange={(e) => {
+        const newValue = e.target.valueAsNumber;
+        onChange(!isNaN(newValue) ? newValue : 0);
+      }}
+      value={value || ""}
+      className="text-lg px-4 py-1.5 text-center border border-gray-300 rounded-md w-full"
     />
   );
 }
