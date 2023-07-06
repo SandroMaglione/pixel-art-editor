@@ -86,7 +86,8 @@ export class CanvasGrid {
     touchX: number,
     touchY: number,
     color: ColorHSL,
-    mode: EditorMode
+    mode: EditorMode,
+    onColorPick: (color: ColorHSL) => void
   ): void {
     // TODO: Make cells in array unique, add color to them, make searching near cells easier
     const x = Math.floor(this.toTrueX(touchX) / CELL_SIZE);
@@ -99,7 +100,7 @@ export class CanvasGrid {
       } else if (mode === "erase" && findCell) {
         this.cells.delete(cellKey);
       } else if (mode === "picker" && findCell) {
-        // TODO: Picked
+        onColorPick(findCell.color);
       }
     }
   }

@@ -27,6 +27,13 @@ export default function Home() {
         pixelWidth={16}
         color={colorHSL}
         mode={mode}
+        onColorPick={(pickedColor) =>
+          setColor([
+            lerp(0, 1, pickedColor[0] / 365),
+            lerp(0, 1, pickedColor[1] / 100),
+            lerp(0, 1, pickedColor[2] / 100),
+          ])
+        }
       />
 
       <div className="fixed bottom-0 inset-x-0 px-4 pb-4">
@@ -68,9 +75,9 @@ export default function Home() {
               viewBox="0 0 24 24"
               fill="none"
               stroke="currentColor"
-              stroke-width="2"
-              stroke-linecap="round"
-              stroke-linejoin="round"
+              strokeWidth="2"
+              strokeLinecap="round"
+              strokeLinejoin="round"
               className="w-4 h-4"
             >
               <path d="m7 21-4.3-4.3c-1-1-1-2.5 0-3.4l9.6-9.6c1-1 2.5-1 3.4 0l5.6 5.6c1 1 1 2.5 0 3.4L13 21" />
