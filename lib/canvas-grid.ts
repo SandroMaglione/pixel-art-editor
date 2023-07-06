@@ -81,12 +81,19 @@ export class CanvasGrid {
     this.scale *= amount;
   }
 
-  resizeX(pixelSize: number): void {
-    this.pixelWidth = pixelSize;
-  }
+  resize(x: number, y: number): void {
+    this.pixelWidth = x;
+    this.pixelHeight = y;
 
-  resizeY(pixelSize: number): void {
-    this.pixelHeight = pixelSize;
+    const keys = this.cells.keys();
+    for (const mapCellKey of keys) {
+      const [cellX, cellY] = fromCellKey(mapCellKey);
+      if (cellX >= x || cellY >= y) {
+        this.cells.delete(mapCellKey);
+      }
+    }
+
+    this.recenter();
   }
 
   recenter(): void {

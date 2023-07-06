@@ -8,6 +8,7 @@ import ActionButton from "./ActionButton";
 import ColorPickerBar from "./ColorPickerBar";
 import InfiniteCanvas from "./InfiniteCanvas";
 import ModeButton from "./ModeButton";
+import Resize from "./Resize";
 
 export default function Home() {
   const canvasGridRef = useRef<CanvasGrid>(
@@ -15,6 +16,7 @@ export default function Home() {
   );
   const [color, setColor] = useState<[number, number, number]>([0, 1, 0.5]);
   const [mode, setMode] = useState<EditorMode>("color");
+  const [isResizing, setIsResizing] = useState(false);
   const colorHSL: ColorHSL = [
     lerp(0, 365, color[0]),
     lerp(0, 100, color[1]),
@@ -148,6 +150,23 @@ export default function Home() {
                 <path d="M20 22V2" />
               </svg>
             </ActionButton>
+            <ActionButton action="resize" onClick={() => setIsResizing(true)}>
+              <svg
+                xmlns="http://www.w3.org/2000/svg"
+                viewBox="0 0 24 24"
+                fill="none"
+                stroke="currentColor"
+                strokeWidth="2"
+                strokeLinecap="round"
+                strokeLinejoin="round"
+                className="w-4 h-4"
+              >
+                <path d="m21 21-6-6m6 6v-4.8m0 4.8h-4.8" />
+                <path d="M3 16.2V21m0 0h4.8M3 21l6-6" />
+                <path d="M21 7.8V3m0 0h-4.8M21 3l-6 6" />
+                <path d="M3 7.8V3m0 0h4.8M3 3l6 6" />
+              </svg>
+            </ActionButton>
           </div>
         </div>
 
@@ -190,6 +209,16 @@ export default function Home() {
           onValueChange={setLightness}
         />
       </div>
+
+      {isResizing && (
+        <Resize
+          onClose={() => setIsResizing(false)}
+          onResize={(x, y) => {
+            canvasGridRef.current.resize(x, y);
+            setIsResizing(false);
+          }}
+        />
+      )}
     </main>
   );
 }
