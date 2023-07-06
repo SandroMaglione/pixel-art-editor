@@ -58,9 +58,17 @@ export class CanvasGrid {
   }
 
   addCellAt(touchX: number, touchY: number): void {
+    console.log(
+      { Y: this.offsetY, X: this.offsetX, s: this.scale },
+      touchX,
+      this.toTrueX(touchX),
+      touchY,
+      this.toTrueY(touchY)
+    );
+
     this.cells.push([
-      Math.floor(touchX / this.toScreenX(CELL_SIZE)),
-      Math.floor(touchY / this.toScreenY(CELL_SIZE)),
+      Math.floor(this.toTrueX(touchX) / CELL_SIZE),
+      Math.floor(this.toTrueY(touchY) / CELL_SIZE),
     ]);
   }
 
