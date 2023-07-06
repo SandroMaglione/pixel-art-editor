@@ -70,7 +70,7 @@ export default function Home() {
         <button type="submit">Set</button>
       </form>
 
-      <InfiniteCanvas />
+      <InfiniteCanvas pixelHeight={12} pixelWidth={12} />
 
       <div className="flex">
         <ModeButton mode="color" onClick={setMode} currentMode={mode}>

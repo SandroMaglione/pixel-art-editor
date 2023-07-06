@@ -1,13 +1,22 @@
 import { CanvasGrid } from "@/lib/canvas-grid";
 import { ReactElement, useEffect, useRef } from "react";
 
-export default function InfiniteCanvas(): ReactElement {
+interface InfiniteCanvasProps {
+  pixelWidth: number;
+  pixelHeight: number;
+}
+
+export default function InfiniteCanvas({
+  pixelHeight,
+  pixelWidth,
+}: InfiniteCanvasProps): ReactElement {
   const canvasGridRef = useRef<CanvasGrid | null>(null);
   useEffect(() => {
-    const cg = new CanvasGrid();
+    const cg = new CanvasGrid({ pixelHeight, pixelWidth });
     cg.draw();
     canvasGridRef.current = cg;
-  }, []);
+  }, [pixelHeight, pixelWidth]);
+
   return (
     <div className="touch-none select-none fixed inset-0 w-full h-full z-10">
       <canvas
