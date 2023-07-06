@@ -1,76 +1,23 @@
 "use client";
 
 import { lerp } from "@/lib/helpers";
-import { EditorMode } from "@/lib/types";
+import { ColorHSL, EditorMode } from "@/lib/types";
 import { useState } from "react";
 import ColorPickerBar from "./ColorPickerBar";
 import InfiniteCanvas from "./InfiniteCanvas";
-import InputField from "./InputField";
 import ModeButton from "./ModeButton";
 
-type ColorHSL = [hue: number, saturation: number, lightness: number];
-
 export default function Home() {
-  const [size, setSize] = useState<{ w: number; h: number }>({ h: 16, w: 16 });
-  const [canvasGrid, setCanvasGrid] = useState<ColorHSL[][]>([]);
-  const [palette, setPalette] = useState<ColorHSL[]>([]);
-
-  const [isClicking, setIsClicking] = useState(false);
-  const [lightness, setLightness] = useState<number>(50);
-  const [saturation, setSaturation] = useState<number>(100);
-  const [hue, setHue] = useState<number>(0);
-  const color: ColorHSL = [hue, saturation, lightness];
-
+  const [color, setColor] = useState<ColorHSL>([0, 100, 50]);
   const [mode, setMode] = useState<EditorMode>("color");
 
-  const changeCellColor = (xCell: number, yCell: number) => {
-    setCanvasGrid((grid) =>
-      grid.map((r, x) =>
-        r.map((cColor, y) => (x === xCell && y === yCell ? color : cColor))
-      )
-    );
-  };
-
-  const onColoring = (e: React.TouchEvent<HTMLDivElement>) => {
-    if (mode === "color") {
-      const currentElementTouched = document.elementFromPoint(
-        e.touches[0].clientX,
-        e.touches[0].clientY
-      );
-
-      if (currentElementTouched !== null) {
-        const coordinates = currentElementTouched.id.split("-");
-        const x = Number(coordinates[0]);
-        const y = Number(coordinates[1]);
-        changeCellColor(x, y);
-      }
-    }
-  };
+  const setHue = (v: number) => setColor((c) => [v, c[1], c[2]]);
+  const setSaturation = (v: number) => setColor((c) => [c[0], v, c[2]]);
+  const setLightness = (v: number) => setColor((c) => [c[0], c[1], v]);
 
   return (
     <main className="absolute inset-0 overflow-hidden flex flex-col">
-      <form
-        onSubmit={(e) => {
-          e.preventDefault();
-          setCanvasGrid(
-            Array.from({ length: size.w }).map(() =>
-              Array.from({ length: size.h }).map(() => [0, 100, 100])
-            )
-          );
-        }}
-      >
-        <InputField
-          value={size.w}
-          onChange={(w) => setSize((s) => ({ ...s, w }))}
-        />
-        <InputField
-          value={size.h}
-          onChange={(h) => setSize((s) => ({ ...s, h }))}
-        />
-        <button type="submit">Set</button>
-      </form>
-
-      <InfiniteCanvas pixelHeight={12} pixelWidth={12} />
+      <InfiniteCanvas pixelHeight={12} pixelWidth={12} color={color} />
 
       <div className="flex">
         <ModeButton mode="color" onClick={setMode} currentMode={mode}>
@@ -106,65 +53,18 @@ export default function Home() {
         </ModeButton>
       </div>
 
-      <div
-        className="bg-white grid w-1/4"
-        style={{
-          gridTemplateColumns: `repeat(${size.w}, minmax(0, 1fr))`,
-        }}
-      >
-        {canvasGrid.map((r, x) =>
-          r.map((color, y) => (
-            <span
-              key={`${x}-${y}`}
-              className="aspect-square"
-              style={{
-                backgroundColor: `hsl(${color[0]}deg ${color[1]}% ${color[2]}%)`,
-              }}
-            />
-          ))
-        )}
-      </div>
-
-      <div className="flex-1 flex items-center justify-center px-6">
+      <div className="fixed bottom-0 inset-x-0 px-4 pb-4">
         <div
-          onTouchEnd={() => setIsClicking(false)}
-          onTouchStart={(e) => {
-            setIsClicking(true);
-            onColoring(e);
-          }}
-          onTouchMove={(e) => {
-            if (isClicking) {
-              onColoring(e);
-            }
-          }}
-          className="bg-white grid w-screen"
-          style={{
-            gridTemplateColumns: `repeat(${size.w}, minmax(0, 1fr))`,
-          }}
-        >
-          {canvasGrid.map((r, x) =>
-            r.map((color, y) => (
-              <span
-                key={`${x}-${y}`}
-                id={`${x}-${y}`}
-                className="aspect-square border border-black/10"
-                style={{
-                  backgroundColor: `hsl(${color[0]}deg ${color[1]}% ${color[2]}%)`,
-                }}
-                onClick={() => {
-                  if (mode === "picker") {
-                    setHue(color[0]);
-                    setSaturation(color[1]);
-                    setLightness(color[2]);
-                  }
-                }}
-              />
-            ))
-          )}
-        </div>
-      </div>
+          style={
+            {
+              "--hue": `${color[0]}deg`,
+              "--sat": `${color[1]}%`,
+              "--lig": `${color[2]}%`,
+            } as React.CSSProperties
+          }
+          className="bg-[hsl(var(--hue),var(--sat),var(--lig))] w-full h-[16px] border-2 border-white mb-1"
+        />
 
-      <div>
         <ColorPickerBar
           style={{
             background:
@@ -177,7 +77,7 @@ export default function Home() {
         <ColorPickerBar
           style={
             {
-              "--hue": `${hue}deg`,
+              "--hue": `${color[0]}deg`,
               background:
                 "linear-gradient(to right, hsl(var(--hue) 100% 50% / 0), hsl(var(--hue) 100% 50% / 1))",
             } as React.CSSProperties
@@ -195,52 +95,6 @@ export default function Home() {
             setLightness(lerp(0, 100, percentage));
           }}
         />
-      </div>
-
-      <div className="flex">
-        <div
-          style={
-            {
-              "--hue": `${hue}deg`,
-              "--sat": `${saturation}%`,
-              "--lig": `${lightness}%`,
-            } as React.CSSProperties
-          }
-          className="bg-[hsl(var(--hue),var(--sat),var(--lig))] w-[60px] h-[60px]"
-        />
-        <button onClick={() => setPalette((l) => [color, ...palette])}>
-          <svg
-            xmlns="http://www.w3.org/2000/svg"
-            viewBox="0 0 24 24"
-            fill="none"
-            stroke="currentColor"
-            strokeWidth="2"
-            strokeLinecap="round"
-            strokeLinejoin="round"
-            className="w-8 h-8"
-          >
-            <rect width="18" height="18" x="3" y="3" rx="2" ry="2" />
-            <line x1="12" x2="12" y1="8" y2="16" />
-            <line x1="8" x2="16" y1="12" y2="12" />
-          </svg>
-        </button>
-      </div>
-
-      <div className="grid grid-cols-8">
-        {palette.map((cp, i) => (
-          <button
-            key={i}
-            className="aspect-square"
-            style={{
-              background: `hsl(${cp[0]}deg ${cp[1]}% ${cp[2]}%)`,
-            }}
-            onClick={() => {
-              setHue(cp[0]);
-              setSaturation(cp[1]);
-              setLightness(cp[2]);
-            }}
-          />
-        ))}
       </div>
     </main>
   );

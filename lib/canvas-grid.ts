@@ -1,3 +1,5 @@
+import { ColorHSL } from "./types";
+
 const CELL_SIZE = 40;
 
 export class CanvasGrid {
@@ -14,7 +16,7 @@ export class CanvasGrid {
   touchMode: "single" | "double" = "single";
   prevTouch: [React.Touch | null, React.Touch | null] = [null, null];
 
-  cells: [number, number][] = [];
+  cells: [number, number, ColorHSL][] = [];
 
   constructor({
     pixelHeight,
@@ -29,19 +31,9 @@ export class CanvasGrid {
     this.pixelWidth = pixelWidth;
     this.pixelHeight = pixelHeight;
 
-    // this.canvas.clientWidth / (CELL_SIZE * this.scale) = pixelWidth
-    // this.canvas.clientWidth = pixelWidth * (CELL_SIZE * this.scale)
-    // this.canvas.clientWidth / (pixelWidth * CELL_SIZE) = this.scale
-
     const padding = 2;
     this.scale =
       document.body.clientWidth / (CELL_SIZE * (pixelWidth + padding * 2));
-
-    console.log({
-      w: this.canvas.clientWidth,
-      r: this.canvas.clientWidth / (CELL_SIZE * pixelWidth),
-    });
-
     this.offsetX += CELL_SIZE * padding;
     this.offsetY += CELL_SIZE * padding;
   }
@@ -89,12 +81,12 @@ export class CanvasGrid {
     this.pixelHeight = pixelSize;
   }
 
-  addCellAt(touchX: number, touchY: number): void {
+  addCellAt(touchX: number, touchY: number, color: ColorHSL): void {
     // TODO: Make cells in array unique, add color to them, make searching near cells easier
     const x = Math.floor(this.toTrueX(touchX) / CELL_SIZE);
     const y = Math.floor(this.toTrueY(touchY) / CELL_SIZE);
     if (x >= 0 && y >= 0 && x < this.pixelWidth && y < this.pixelHeight) {
-      this.cells.push([x, y]);
+      this.cells.push([x, y, color]);
     }
   }
 
@@ -125,8 +117,8 @@ export class CanvasGrid {
   }
 
   private _drawCells(): void {
-    this.context.fillStyle = "#111";
-    this.cells.forEach(([cellX, cellY]) => {
+    this.cells.forEach(([cellX, cellY, color]) => {
+      this.context.fillStyle = `hsl(${color[0]}deg ${color[1]}% ${color[2]}%)`;
       this.context.fillRect(
         this.toScreenX(cellX * CELL_SIZE),
         this.toScreenY(cellY * CELL_SIZE),

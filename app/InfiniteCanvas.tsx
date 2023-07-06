@@ -1,16 +1,20 @@
 import { CanvasGrid } from "@/lib/canvas-grid";
+import { ColorHSL } from "@/lib/types";
 import { ReactElement, useEffect, useRef } from "react";
 
 interface InfiniteCanvasProps {
   pixelWidth: number;
   pixelHeight: number;
+  color: ColorHSL;
 }
 
 export default function InfiniteCanvas({
   pixelHeight,
   pixelWidth,
+  color,
 }: InfiniteCanvasProps): ReactElement {
   const canvasGridRef = useRef<CanvasGrid | null>(null);
+
   useEffect(() => {
     const cg = new CanvasGrid({ pixelHeight, pixelWidth });
     cg.draw();
@@ -18,7 +22,7 @@ export default function InfiniteCanvas({
   }, [pixelHeight, pixelWidth]);
 
   return (
-    <div className="touch-none select-none fixed inset-0 w-full h-full z-10">
+    <div className="touch-none select-none fixed inset-0 w-full h-full">
       <canvas
         id="canvas"
         className="bg-gray-100"
@@ -33,10 +37,6 @@ export default function InfiniteCanvas({
           // store the last touches
           canvasGrid.prevTouch[0] = event.touches[0];
           canvasGrid.prevTouch[1] = event.touches[1];
-
-          canvasGrid.zoom(0.99);
-          canvasGrid.offsetX += 10;
-          canvasGrid.offsetY += 10;
           canvasGrid.draw();
         }}
         onTouchMove={(event) => {
@@ -55,10 +55,8 @@ export default function InfiniteCanvas({
           const prevScaledY = canvasGrid.toTrueY(prevTouch0Y);
 
           if (canvasGrid.touchMode === "single") {
-            canvasGrid.addCellAt(touch0X, touch0Y);
+            canvasGrid.addCellAt(touch0X, touch0Y, color);
             canvasGrid.draw();
-
-            // TODO
           } else if (canvasGrid.touchMode === "double") {
             // get second touch coordinates
             const touch1X = event.touches[1].pageX;
