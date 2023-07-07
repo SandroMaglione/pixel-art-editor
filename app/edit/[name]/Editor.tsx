@@ -34,7 +34,11 @@ export default function Editor({ canvasGrid, name }: EditorProps) {
     canvasGridToSchema(canvasGrid),
   ]);
 
-  const [color, setColor] = useState<[number, number, number]>([0, 1, 0.5]);
+  const [color, setColor] = useState<[number, number, number]>([
+    222 / 365,
+    0.63,
+    0.75,
+  ]);
   const [mode, setMode] = useState<EditorMode>("color");
   const [isResizing, setIsResizing] = useState(false);
   const colorHSL: ColorHSL = [
