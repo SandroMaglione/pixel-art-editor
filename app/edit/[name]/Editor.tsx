@@ -1,6 +1,9 @@
 "use client";
 
 import { CanvasGrid } from "@/lib/canvas-grid";
+import { Effect, pipe } from "@/lib/effect/common";
+import { StorageService } from "@/lib/effect/services/storage-service";
+import { storageLayerLive } from "@/lib/effect/storage-layer";
 import { lerp } from "@/lib/helpers";
 import { ColorHSL, EditorMode } from "@/lib/types";
 import { useRef, useState } from "react";
@@ -14,6 +17,15 @@ interface EditorProps {
   name: string;
   canvasGrid: CanvasGrid;
 }
+
+const saveFile = (name: string, canvasGrid: CanvasGrid) =>
+  pipe(
+    Effect.gen(function* (_) {
+      const storage = yield* _(StorageService);
+      return storage.saveFile(name, canvasGrid);
+    }),
+    Effect.provideLayer(storageLayerLive)
+  );
 
 export default function Editor({ canvasGrid, name }: EditorProps) {
   const canvasGridRef = useRef<CanvasGrid>(canvasGrid);
@@ -29,6 +41,10 @@ export default function Editor({ canvasGrid, name }: EditorProps) {
   const setHue = (v: number) => setColor((c) => [v, c[1], c[2]]);
   const setSaturation = (v: number) => setColor((c) => [c[0], v, c[2]]);
   const setLightness = (v: number) => setColor((c) => [c[0], c[1], v]);
+
+  const onSave = () => {
+    pipe(saveFile(name, canvasGridRef.current), Effect.runSync);
+  };
 
   return (
     <main className="absolute inset-0 overflow-hidden flex flex-col">
@@ -168,6 +184,22 @@ export default function Editor({ canvasGrid, name }: EditorProps) {
                 <path d="M3 16.2V21m0 0h4.8M3 21l6-6" />
                 <path d="M21 7.8V3m0 0h-4.8M21 3l-6 6" />
                 <path d="M3 7.8V3m0 0h4.8M3 3l6 6" />
+              </svg>
+            </ActionButton>
+            <ActionButton action="save" onClick={onSave}>
+              <svg
+                xmlns="http://www.w3.org/2000/svg"
+                viewBox="0 0 24 24"
+                fill="none"
+                stroke="currentColor"
+                strokeWidth="2"
+                strokeLinecap="round"
+                strokeLinejoin="round"
+                className="w-4 h-4"
+              >
+                <path d="M19 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11l5 5v11a2 2 0 0 1-2 2z" />
+                <polyline points="17 21 17 13 7 13 7 21" />
+                <polyline points="7 3 7 8 15 8" />
               </svg>
             </ActionButton>
           </div>
