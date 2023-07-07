@@ -1,5 +1,6 @@
+import InputButton from "@/app/InputButton";
 import { ReactElement, useState } from "react";
-import InputField from "./InputField";
+import InputNumber from "./InputNumber";
 
 interface ResizeProps {
   onClose: () => void;
@@ -27,14 +28,9 @@ export default function Resize({
           onResize(x, y);
         }}
       >
-        <InputField value={x} onChange={setX} />
-        <InputField value={y} onChange={setY} />
-        <button
-          type="submit"
-          className="text-center font-bold w-full rounded-md bg-indigo-500 text-white py-2"
-        >
-          Confirm
-        </button>
+        <InputNumber value={x} onChange={setX} />
+        <InputNumber value={y} onChange={setY} />
+        <InputButton>Confirm</InputButton>
       </form>
     </div>
   );

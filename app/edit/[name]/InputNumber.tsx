@@ -1,14 +1,14 @@
 import { ReactElement } from "react";
 
-interface InputFieldProps {
+interface InputNumberProps {
   value: number;
   onChange: (n: number) => void;
 }
 
-export default function InputField({
+export default function InputNumber({
   onChange,
   value,
-}: InputFieldProps): ReactElement {
+}: InputNumberProps): ReactElement {
   return (
     <input
       type="number"
