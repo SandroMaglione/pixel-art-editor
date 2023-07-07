@@ -4,14 +4,16 @@ import InputField from "./InputField";
 interface ResizeProps {
   onClose: () => void;
   onResize: (x: number, y: number) => void;
+  initial: [x: number, y: number];
 }
 
 export default function Resize({
   onResize,
   onClose,
+  initial,
 }: ResizeProps): ReactElement {
-  const [x, setX] = useState<number>(16);
-  const [y, setY] = useState<number>(16);
+  const [x, setX] = useState<number>(initial[0]);
+  const [y, setY] = useState<number>(initial[1]);
   return (
     <div
       className="absolute z-10 inset-0 p-6 bg-black/30 flex items-center justify-center"
