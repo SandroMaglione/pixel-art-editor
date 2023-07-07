@@ -1,3 +1,4 @@
+import { CanvasGridSchema } from "./effect/schema";
 import { eqColor, fromCellKey, toCellKey } from "./helpers";
 import { CellKey, ColorHSL, EditorMode } from "./types";
 
@@ -30,6 +31,19 @@ export class CanvasGrid {
   }) {
     this.pixelWidth = pixelWidth;
     this.pixelHeight = pixelHeight;
+  }
+
+  static restore(data: CanvasGridSchema): CanvasGrid {
+    const canvasGrid = new CanvasGrid({
+      pixelHeight: data.pixelHeight,
+      pixelWidth: data.pixelWidth,
+    });
+    const cells: Map<CellKey, { color: ColorHSL }> = new Map();
+    data.cells.forEach((cell) => {
+      cells.set(toCellKey(cell.x, cell.y), { color: [...cell.color] });
+    });
+    canvasGrid.cells = cells;
+    return canvasGrid;
   }
 
   init(): void {
