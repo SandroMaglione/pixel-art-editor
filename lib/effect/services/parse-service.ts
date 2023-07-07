@@ -4,7 +4,7 @@ import { Context, Layer, Option, Schema, pipe } from "../common";
 import { CanvasGridSchema } from "../schema";
 
 export interface ParseService {
-  readonly toJson: (data: unknown[]) => string;
+  readonly toJson: (data: Record<string, unknown>) => string;
   readonly fromJson: (data: string) => unknown;
 }
 

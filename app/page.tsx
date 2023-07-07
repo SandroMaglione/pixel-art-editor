@@ -1,6 +1,6 @@
 "use client";
 import { Effect, pipe } from "@/lib/effect/common";
-import { StorageSchemaList } from "@/lib/effect/schema";
+import { StorageSchemaData } from "@/lib/effect/schema";
 import { StorageService } from "@/lib/effect/services/storage-service";
 import { storageLayerLive } from "@/lib/effect/storage-layer";
 import Link from "next/link";
@@ -24,7 +24,7 @@ const newFile = (name: string) =>
   );
 
 export default function Page(): ReactElement {
-  const [fileList, setFileList] = useState<StorageSchemaList>([]);
+  const [fileList, setFileList] = useState<StorageSchemaData>({});
 
   const onNew = () => {
     pipe(newFile("added"), Effect.runSync);
@@ -39,7 +39,7 @@ export default function Page(): ReactElement {
     <div>
       <div>
         <button onClick={onNew}>New</button>
-        {fileList.map((file) => (
+        {Object.entries(fileList).map(([, file]) => (
           <Link key={file.name} href={`/edit/${file.name}`}>
             {file.name}
           </Link>

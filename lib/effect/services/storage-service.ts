@@ -1,6 +1,6 @@
 import { CanvasGrid } from "@/lib/canvas-grid";
 import { Context, Effect, Either, Layer, Schema, pipe } from "../common";
-import { StorageSchemaList } from "../schema";
+import { StorageSchemaData } from "../schema";
 import { ParseService } from "./parse-service";
 
 const STORAGE_KEY = "pixel-editor-storage";
@@ -10,7 +10,7 @@ export class MissingFileError {
 }
 
 interface StorageService {
-  readonly getFileList: () => StorageSchemaList;
+  readonly getFileList: () => StorageSchemaData;
   readonly saveFile: (name: string, canvasGrid: CanvasGrid) => void;
   readonly getFile: (
     name: string
@@ -25,12 +25,12 @@ export const StorageService = Context.Tag<StorageService>(
 const getFileList = (parseService: ParseService) => () => {
   const data = localStorage.getItem(STORAGE_KEY);
   if (data === null) {
-    return [];
+    return {};
   }
 
   const json = parseService.fromJson(data);
-  const parsed = pipe(json, Schema.parseEither(StorageSchemaList));
-  return Either.isLeft(parsed) ? [] : parsed.right;
+  const parsed = pipe(json, Schema.parseEither(StorageSchemaData));
+  return Either.isLeft(parsed) ? {} : parsed.right;
 };
 
 export const StorageServiceLive = Layer.effect(
@@ -40,7 +40,7 @@ export const StorageServiceLive = Layer.effect(
       getFileList: getFileList(parseService),
       getFile: (name) => {
         const fileList = getFileList(parseService)();
-        const find = fileList.find((file) => file.name === name);
+        const find = fileList[name];
         if (!find) {
           return Either.left(new MissingFileError());
         }
@@ -51,26 +51,26 @@ export const StorageServiceLive = Layer.effect(
         const data = getFileList(parseService)();
         localStorage.setItem(
           STORAGE_KEY,
-          parseService.toJson([
+          parseService.toJson({
             ...data,
-            {
+            [name]: {
               name,
               value: canvasGrid,
             },
-          ])
+          })
         );
       },
       newFile: (name) => {
         const data = getFileList(parseService)();
         localStorage.setItem(
           STORAGE_KEY,
-          parseService.toJson([
+          parseService.toJson({
             ...data,
-            {
+            [name]: {
               name,
               value: new CanvasGrid({ pixelHeight: 16, pixelWidth: 16 }),
             },
-          ])
+          })
         );
       },
     })

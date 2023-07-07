@@ -22,6 +22,6 @@ export const StorageSchema = Schema.struct({
 
 export type StorageSchema = Schema.To<typeof StorageSchema>;
 
-export const StorageSchemaList = pipe(StorageSchema, Schema.array);
+export const StorageSchemaData = Schema.record(Schema.string, StorageSchema);
 
-export type StorageSchemaList = Schema.To<typeof StorageSchemaList>;
+export type StorageSchemaData = Schema.To<typeof StorageSchemaData>;
