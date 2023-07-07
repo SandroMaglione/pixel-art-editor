@@ -6,9 +6,13 @@
     "dev": "next dev",
     "build": "next build",
     "start": "next start",
-    "lint": "next lint"
+    "lint": "next lint",
+    "tsc": "tsc -p tsconfig.json"
   },
   "dependencies": {
+    "@effect/data": "^0.13.2",
+    "@effect/io": "^0.31.1",
+    "@effect/schema": "^0.24.0",
     "@types/node": "20.3.3",
     "@types/react": "18.2.14",
     "@types/react-dom": "18.2.6",

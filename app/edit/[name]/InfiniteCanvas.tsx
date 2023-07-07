@@ -1,5 +1,5 @@
 import { CanvasGrid } from "@/lib/canvas-grid";
-import { ColorHSL, EditorMode } from "@/lib/types";
+import { CanvasGridAction, ColorHSL, EditorMode } from "@/lib/types";
 import { ReactElement, useEffect } from "react";
 
 interface InfiniteCanvasProps {
@@ -7,6 +7,7 @@ interface InfiniteCanvasProps {
   mode: EditorMode;
   onColorPick: (color: ColorHSL) => void;
   canvasGrid: CanvasGrid;
+  onExecute: (action: CanvasGridAction) => void;
 }
 
 export default function InfiniteCanvas({
@@ -14,6 +15,7 @@ export default function InfiniteCanvas({
   mode,
   canvasGrid,
   onColorPick,
+  onExecute,
 }: InfiniteCanvasProps): ReactElement {
   const onTouchDraw = (event: React.TouchEvent<HTMLCanvasElement>) => {
     // get first touch coordinates
@@ -24,7 +26,10 @@ export default function InfiniteCanvas({
     const prevTouch0Y = canvasGrid.prevTouch[0]!.pageY;
 
     if (canvasGrid.touchMode === "single") {
-      canvasGrid.addCellAt(touch0X, touch0Y, color, mode, onColorPick);
+      onExecute({
+        _tag: "draw",
+        value: { touchX: touch0X, touchY: touch0Y, color, mode, onColorPick },
+      });
     } else if (canvasGrid.touchMode === "double") {
       // get second touch coordinates
       const touch1X = event.touches[1].pageX;

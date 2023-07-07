@@ -1,5 +1,6 @@
-import { eqColor, fromCellKey, toCellKey } from "./helpers";
-import { CellKey, ColorHSL, EditorMode } from "./types";
+import { CanvasGridSchema } from "./effect/schema";
+import { canvasSchemaToGrid, eqColor, fromCellKey, toCellKey } from "./helpers";
+import { CanvasGridAction, CellKey, ColorHSL, EditorMode } from "./types";
 
 const CELL_SIZE = 40;
 const PREVIEW_MAX_WIDTH = 50; // px
@@ -30,6 +31,18 @@ export class CanvasGrid {
   }) {
     this.pixelWidth = pixelWidth;
     this.pixelHeight = pixelHeight;
+  }
+
+  static restore(data: CanvasGridSchema): CanvasGrid {
+    return canvasSchemaToGrid(data);
+  }
+
+  undo(data: CanvasGridSchema): void {
+    const canvasGrid = canvasSchemaToGrid(data);
+    this.cells = canvasGrid.cells;
+    this.pixelHeight = canvasGrid.pixelHeight;
+    this.pixelWidth = canvasGrid.pixelWidth;
+    this.draw();
   }
 
   init(): void {
@@ -83,19 +96,24 @@ export class CanvasGrid {
     this.scale *= amount;
   }
 
-  resize(x: number, y: number): void {
-    this.pixelWidth = x;
-    this.pixelHeight = y;
+  private _resize({ x, y }: { x: number; y: number }): boolean {
+    if (this.pixelHeight !== y || this.pixelWidth !== x) {
+      this.pixelWidth = x;
+      this.pixelHeight = y;
 
-    const keys = this.cells.keys();
-    for (const mapCellKey of keys) {
-      const [cellX, cellY] = fromCellKey(mapCellKey);
-      if (cellX >= x || cellY >= y) {
-        this.cells.delete(mapCellKey);
+      const keys = this.cells.keys();
+      for (const mapCellKey of keys) {
+        const [cellX, cellY] = fromCellKey(mapCellKey);
+        if (cellX >= x || cellY >= y) {
+          this.cells.delete(mapCellKey);
+        }
       }
+
+      this.recenter();
+      return true;
     }
 
-    this.recenter();
+    return false;
   }
 
   recenter(): void {
@@ -108,13 +126,21 @@ export class CanvasGrid {
     this.draw();
   }
 
-  addCellAt(
-    touchX: number,
-    touchY: number,
-    color: ColorHSL,
-    mode: EditorMode,
-    onColorPick: (color: ColorHSL) => void
-  ): void {
+  private _addCellAt({
+    color,
+    mode,
+    onColorPick,
+    touchX,
+    touchY,
+  }: {
+    touchX: number;
+    touchY: number;
+    color: ColorHSL;
+    mode: EditorMode;
+    onColorPick: (color: ColorHSL) => void;
+  }): boolean {
+    let isChanged = false;
+
     const x = Math.floor(this.toTrueX(touchX) / CELL_SIZE);
     const y = Math.floor(this.toTrueY(touchY) / CELL_SIZE);
     if (x >= 0 && y >= 0 && x < this.pixelWidth && y < this.pixelHeight) {
@@ -122,12 +148,15 @@ export class CanvasGrid {
       const findCell = this.cells.get(cellKey);
       if (mode === "color" && (!findCell || !eqColor(findCell.color, color))) {
         this.cells.set(cellKey, { color });
+        isChanged = true;
       } else if (mode === "erase" && findCell) {
         this.cells.delete(cellKey);
+        isChanged = true;
       } else if (mode === "picker" && findCell) {
         onColorPick(findCell.color);
       } else if (mode === "fill") {
         this._fill(x, y, color, findCell?.color ?? null);
+        isChanged = true;
       } else if (mode === "swap-color" && findCell) {
         const entries = this.cells.entries();
         for (const [mapCellKey, value] of entries) {
@@ -135,10 +164,23 @@ export class CanvasGrid {
             this.cells.set(mapCellKey, { color });
           }
         }
+        isChanged = true;
       }
 
       this.draw();
     }
+
+    return isChanged;
+  }
+
+  execute(action: CanvasGridAction): boolean {
+    let isChanged = false;
+    if (action._tag === "change-size") {
+      isChanged = this._resize(action.value);
+    } else if (action._tag === "draw") {
+      isChanged = this._addCellAt(action.value);
+    }
+    return isChanged;
   }
 
   private _fill(
