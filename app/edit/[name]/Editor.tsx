@@ -2,10 +2,11 @@
 
 import { CanvasGrid } from "@/lib/canvas-grid";
 import { Effect, pipe } from "@/lib/effect/common";
+import { CanvasGridSchema } from "@/lib/effect/schema";
 import { StorageService } from "@/lib/effect/services/storage-service";
 import { storageLayerLive } from "@/lib/effect/storage-layer";
-import { lerp } from "@/lib/helpers";
-import { ColorHSL, EditorMode } from "@/lib/types";
+import { canvasGridToSchema, lerp } from "@/lib/helpers";
+import { CanvasGridAction, ColorHSL, EditorMode } from "@/lib/types";
 import { useRef, useState } from "react";
 import ActionButton from "./ActionButton";
 import ColorPickerBar from "./ColorPickerBar";
@@ -29,6 +30,10 @@ const saveFile = (name: string, canvasGrid: CanvasGrid) =>
 
 export default function Editor({ canvasGrid, name }: EditorProps) {
   const canvasGridRef = useRef<CanvasGrid>(canvasGrid);
+  const history = useRef<readonly CanvasGridSchema[]>([
+    canvasGridToSchema(canvasGrid),
+  ]);
+
   const [color, setColor] = useState<[number, number, number]>([0, 1, 0.5]);
   const [mode, setMode] = useState<EditorMode>("color");
   const [isResizing, setIsResizing] = useState(false);
@@ -42,13 +47,25 @@ export default function Editor({ canvasGrid, name }: EditorProps) {
   const setSaturation = (v: number) => setColor((c) => [c[0], v, c[2]]);
   const setLightness = (v: number) => setColor((c) => [c[0], c[1], v]);
 
-  const onSave = () => {
-    pipe(saveFile(name, canvasGridRef.current), Effect.runSync);
+  const onSave = (canvasGrid: CanvasGrid) => {
+    pipe(saveFile(name, canvasGrid), Effect.runSync);
+  };
+
+  const onExecute = (action: CanvasGridAction) => {
+    const isChanged = canvasGridRef.current.execute(action);
+    onSave(canvasGridRef.current);
+    if (isChanged) {
+      history.current = [
+        ...history.current,
+        canvasGridToSchema(canvasGridRef.current),
+      ];
+    }
   };
 
   return (
     <main className="absolute inset-0 overflow-hidden flex flex-col">
       <InfiniteCanvas
+        onExecute={onExecute}
         canvasGrid={canvasGridRef.current}
         color={colorHSL}
         mode={mode}
@@ -151,6 +168,34 @@ export default function Editor({ canvasGrid, name }: EditorProps) {
           </div>
           <div className="flex justify-end">
             <ActionButton
+              action="undo"
+              onClick={() => {
+                if (history.current.length > 1) {
+                  const value = history.current[history.current.length - 2];
+                  history.current = history.current.slice(
+                    0,
+                    history.current.length - 1
+                  );
+                  canvasGridRef.current.undo(value);
+                  onSave(canvasGridRef.current);
+                }
+              }}
+            >
+              <svg
+                xmlns="http://www.w3.org/2000/svg"
+                viewBox="0 0 24 24"
+                fill="none"
+                stroke="currentColor"
+                strokeWidth="2"
+                strokeLinecap="round"
+                strokeLinejoin="round"
+                className="w-4 h-4"
+              >
+                <path d="M9 14 4 9l5-5" />
+                <path d="M4 9h10.5a5.5 5.5 0 0 1 5.5 5.5v0a5.5 5.5 0 0 1-5.5 5.5H11" />
+              </svg>
+            </ActionButton>
+            <ActionButton
               action="centering"
               onClick={() => canvasGridRef.current.recenter()}
             >
@@ -184,22 +229,6 @@ export default function Editor({ canvasGrid, name }: EditorProps) {
                 <path d="M3 16.2V21m0 0h4.8M3 21l6-6" />
                 <path d="M21 7.8V3m0 0h-4.8M21 3l-6 6" />
                 <path d="M3 7.8V3m0 0h4.8M3 3l6 6" />
-              </svg>
-            </ActionButton>
-            <ActionButton action="save" onClick={onSave}>
-              <svg
-                xmlns="http://www.w3.org/2000/svg"
-                viewBox="0 0 24 24"
-                fill="none"
-                stroke="currentColor"
-                strokeWidth="2"
-                strokeLinecap="round"
-                strokeLinejoin="round"
-                className="w-4 h-4"
-              >
-                <path d="M19 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11l5 5v11a2 2 0 0 1-2 2z" />
-                <polyline points="17 21 17 13 7 13 7 21" />
-                <polyline points="7 3 7 8 15 8" />
               </svg>
             </ActionButton>
           </div>
@@ -250,7 +279,10 @@ export default function Editor({ canvasGrid, name }: EditorProps) {
           initial={[canvasGrid.pixelWidth, canvasGrid.pixelHeight]}
           onClose={() => setIsResizing(false)}
           onResize={(x, y) => {
-            canvasGridRef.current.resize(x, y);
+            onExecute({
+              _tag: "change-size",
+              value: { x, y },
+            });
             setIsResizing(false);
           }}
         />

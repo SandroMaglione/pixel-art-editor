@@ -1,5 +1,5 @@
 import { CanvasGrid } from "@/lib/canvas-grid";
-import { fromCellKey } from "@/lib/helpers";
+import { canvasGridToSchema } from "@/lib/helpers";
 import { Context, Layer, Option, Schema, pipe } from "../common";
 import { CanvasGridSchema } from "../schema";
 
@@ -16,20 +16,9 @@ export const ParseServiceLive = Layer.succeed(
     toJson: (data) => {
       return JSON.stringify(data, (_, value) => {
         if (value instanceof CanvasGrid) {
-          const schema: CanvasGridSchema = {
-            cells: Array.from(value.cells.entries()).map(
-              ([cellKey, cellValue]) => {
-                const [x, y] = fromCellKey(cellKey);
-                return { x, y, color: cellValue.color };
-              }
-            ),
-            pixelHeight: value.pixelHeight,
-            pixelWidth: value.pixelWidth,
-          };
-
           return {
             dataType: "CanvasGrid",
-            value: schema,
+            value: canvasGridToSchema(value),
           };
         } else {
           return value;
