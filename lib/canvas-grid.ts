@@ -1,5 +1,5 @@
-import { CanvasGridSchema } from "./effect/schema";
 import { canvasSchemaToGrid, eqColor, fromCellKey, toCellKey } from "./helpers";
+import { CanvasGridSchema } from "./schema";
 import { CanvasGridAction, CellKey, ColorHSL, EditorMode } from "./types";
 
 const CELL_SIZE = 40;

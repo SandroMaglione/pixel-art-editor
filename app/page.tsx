@@ -1,30 +1,12 @@
 "use client";
-import { Effect, pipe } from "@/lib/effect/common";
-import { StorageSchemaData } from "@/lib/effect/schema";
-import { StorageService } from "@/lib/effect/services/storage-service";
-import { storageLayerLive } from "@/lib/effect/storage-layer";
+
+import { StorageSchemaData } from "@/lib/schema";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { ReactElement, useEffect, useState } from "react";
 import InputButton from "./InputButton";
 import InputText from "./InputText";
-
-const getFileList = pipe(
-  Effect.gen(function* (_) {
-    const storage = yield* _(StorageService);
-    return storage.getFileList();
-  }),
-  Effect.provideLayer(storageLayerLive)
-);
-
-const newFile = (name: string) =>
-  pipe(
-    Effect.gen(function* (_) {
-      const storage = yield* _(StorageService);
-      return storage.newFile(name);
-    }),
-    Effect.provideLayer(storageLayerLive)
-  );
+import type { pipe, Effect } from "effect";
 
 export default function Page(): ReactElement {
   const [filename, setFilename] = useState("");

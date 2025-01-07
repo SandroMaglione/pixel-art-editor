@@ -1,11 +1,8 @@
 "use client";
 
 import { CanvasGrid } from "@/lib/canvas-grid";
-import { Effect, pipe } from "@/lib/effect/common";
-import { CanvasGridSchema } from "@/lib/effect/schema";
-import { StorageService } from "@/lib/effect/services/storage-service";
-import { storageLayerLive } from "@/lib/effect/storage-layer";
 import { canvasGridToSchema, lerp } from "@/lib/helpers";
+import { CanvasGridSchema } from "@/lib/schema";
 import { CanvasGridAction, ColorHSL, EditorMode } from "@/lib/types";
 import { useRef, useState } from "react";
 import ActionButton from "./ActionButton";
@@ -13,6 +10,7 @@ import ColorPickerBar from "./ColorPickerBar";
 import InfiniteCanvas from "./InfiniteCanvas";
 import ModeButton from "./ModeButton";
 import Resize from "./Resize";
+import type { pipe, Effect } from "effect";
 
 interface EditorProps {
   name: string;

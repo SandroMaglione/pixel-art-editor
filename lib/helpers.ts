@@ -1,5 +1,5 @@
 import { CanvasGrid } from "./canvas-grid";
-import { CanvasGridSchema } from "./effect/schema";
+import { CanvasGridSchema } from "./schema";
 import { CellKey, ColorHSL } from "./types";
 
 export const lerp = (a: number, b: number, n: number): number =>
