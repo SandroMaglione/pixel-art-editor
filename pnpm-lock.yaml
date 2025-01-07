@@ -17,6 +17,12 @@ importers:
       clsx:
         specifier: ^1.2.1
         version: 1.2.1
+      dexie:
+        specifier: ^4.0.10
+        version: 4.0.10
+      dexie-react-hooks:
+        specifier: ^1.1.7
+        version: 1.1.7(@types/react@19.0.3)(dexie@4.0.10)(react@19.0.0)
       effect:
         specifier: ^3.12.1
         version: 3.12.1
@@ -357,6 +363,16 @@ packages:
   detect-libc@2.0.3:
     resolution: {integrity: sha512-bwy0MGW55bG41VqxxypOsdSdGqLwXPI/focwgTYCFMbdUiBAxLg9CFzG08sz2aqzknwiX7Hkl0bQENjg8iLByw==}
     engines: {node: '>=8'}
+
+  dexie-react-hooks@1.1.7:
+    resolution: {integrity: sha512-Lwv5W0Hk+uOW3kGnsU9GZoR1er1B7WQ5DSdonoNG+focTNeJbHW6vi6nBoX534VKI3/uwHebYzSw1fwY6a7mTw==}
+    peerDependencies:
+      '@types/react': '>=16'
+      dexie: ^3.2 || ^4.0.1-alpha
+      react: '>=16'
+
+  dexie@4.0.10:
+    resolution: {integrity: sha512-eM2RzuR3i+M046r2Q0Optl3pS31qTWf8aFuA7H9wnsHTwl8EPvroVLwvQene/6paAs39Tbk6fWZcn2aZaHkc/w==}
 
   effect@3.12.1:
     resolution: {integrity: sha512-aAZdh56Yp1ehOFYeMcHHctTtxfqm6kkOdZFTXK6Zf0QoaKKc1hPG6ocjrKOc0axE8JbG4eZw351ogNLrM4vo9w==}
@@ -785,6 +801,14 @@ snapshots:
 
   detect-libc@2.0.3:
     optional: true
+
+  dexie-react-hooks@1.1.7(@types/react@19.0.3)(dexie@4.0.10)(react@19.0.0):
+    dependencies:
+      '@types/react': 19.0.3
+      dexie: 4.0.10
+      react: 19.0.0
+
+  dexie@4.0.10: {}
 
   effect@3.12.1:
     dependencies:

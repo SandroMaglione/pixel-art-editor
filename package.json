@@ -12,6 +12,8 @@
     "@effect/platform": "^0.72.1",
     "@effect/platform-browser": "^0.51.1",
     "clsx": "^1.2.1",
+    "dexie": "^4.0.10",
+    "dexie-react-hooks": "^1.1.7",
     "effect": "^3.12.1",
     "next": "15.1.3",
     "react": "19.0.0",

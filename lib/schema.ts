@@ -1,27 +1,16 @@
 import { Schema } from "effect";
 
-export class CanvasGridSchema extends Schema.Class<CanvasGridSchema>(
-  "CanvasGridSchema"
+export class PixelArtCanvas extends Schema.Class<PixelArtCanvas>(
+  "PixelArtCanvas"
 )({
-  cells: Schema.Struct({
-    x: Schema.Number.pipe(Schema.nonNegative()),
-    y: Schema.Number.pipe(Schema.nonNegative()),
-    color: Schema.Tuple(Schema.Number, Schema.Number, Schema.Number),
-  }).pipe(Schema.Array),
+  name: Schema.NonEmptyString,
   pixelWidth: Schema.Number.pipe(Schema.nonNegative()),
   pixelHeight: Schema.Number.pipe(Schema.nonNegative()),
-}) {}
-
-export class StorageSchema extends Schema.Class<StorageSchema>("StorageSchema")(
-  {
-    name: Schema.String,
-    value: CanvasGridSchema,
-  }
-) {}
-
-export class StorageSchemaData extends Schema.Class<StorageSchemaData>(
-  "StorageSchemaData"
-)({
-  key: Schema.String,
-  value: StorageSchema,
+  cells: Schema.Array(
+    Schema.Struct({
+      x: Schema.Number.pipe(Schema.nonNegative()),
+      y: Schema.Number.pipe(Schema.nonNegative()),
+      color: Schema.Tuple(Schema.Number, Schema.Number, Schema.Number),
+    })
+  ),
 }) {}
