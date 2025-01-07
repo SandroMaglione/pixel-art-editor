@@ -1,5 +1,5 @@
-import { CanvasGridSchema } from "./effect/schema";
 import { canvasSchemaToGrid, eqColor, fromCellKey, toCellKey } from "./helpers";
+import { PixelArtCanvas } from "./schema";
 import { CanvasGridAction, CellKey, ColorHSL, EditorMode } from "./types";
 
 const CELL_SIZE = 40;
@@ -33,11 +33,11 @@ export class CanvasGrid {
     this.pixelHeight = pixelHeight;
   }
 
-  static restore(data: CanvasGridSchema): CanvasGrid {
+  static restore(data: PixelArtCanvas): CanvasGrid {
     return canvasSchemaToGrid(data);
   }
 
-  undo(data: CanvasGridSchema): void {
+  undo(data: PixelArtCanvas): void {
     const canvasGrid = canvasSchemaToGrid(data);
     this.cells = canvasGrid.cells;
     this.pixelHeight = canvasGrid.pixelHeight;

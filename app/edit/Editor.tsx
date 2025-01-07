@@ -1,11 +1,9 @@
 "use client";
 
 import { CanvasGrid } from "@/lib/canvas-grid";
-import { Effect, pipe } from "@/lib/effect/common";
-import { CanvasGridSchema } from "@/lib/effect/schema";
-import { StorageService } from "@/lib/effect/services/storage-service";
-import { storageLayerLive } from "@/lib/effect/storage-layer";
+import { db } from "@/lib/db";
 import { canvasGridToSchema, lerp } from "@/lib/helpers";
+import { PixelArtCanvas } from "@/lib/schema";
 import { CanvasGridAction, ColorHSL, EditorMode } from "@/lib/types";
 import { useRef, useState } from "react";
 import ActionButton from "./ActionButton";
@@ -19,19 +17,10 @@ interface EditorProps {
   canvasGrid: CanvasGrid;
 }
 
-const saveFile = (name: string, canvasGrid: CanvasGrid) =>
-  pipe(
-    Effect.gen(function* (_) {
-      const storage = yield* _(StorageService);
-      return storage.saveFile(name, canvasGrid);
-    }),
-    Effect.provideLayer(storageLayerLive)
-  );
-
 export default function Editor({ canvasGrid, name }: EditorProps) {
   const canvasGridRef = useRef<CanvasGrid>(canvasGrid);
-  const history = useRef<readonly CanvasGridSchema[]>([
-    canvasGridToSchema(canvasGrid),
+  const history = useRef<readonly PixelArtCanvas[]>([
+    canvasGridToSchema(name, canvasGrid),
   ]);
 
   const [color, setColor] = useState<[number, number, number]>([
@@ -52,7 +41,7 @@ export default function Editor({ canvasGrid, name }: EditorProps) {
   const setLightness = (v: number) => setColor((c) => [c[0], c[1], v]);
 
   const onSave = (canvasGrid: CanvasGrid) => {
-    pipe(saveFile(name, canvasGrid), Effect.runSync);
+    db.file.put(canvasGridToSchema(name, canvasGrid));
   };
 
   const onExecute = (action: CanvasGridAction) => {
@@ -61,7 +50,7 @@ export default function Editor({ canvasGrid, name }: EditorProps) {
     if (isChanged) {
       history.current = [
         ...history.current,
-        canvasGridToSchema(canvasGridRef.current),
+        canvasGridToSchema(name, canvasGridRef.current),
       ];
     }
   };
@@ -176,12 +165,15 @@ export default function Editor({ canvasGrid, name }: EditorProps) {
               onClick={() => {
                 if (history.current.length > 1) {
                   const value = history.current[history.current.length - 2];
-                  history.current = history.current.slice(
-                    0,
-                    history.current.length - 1
-                  );
-                  canvasGridRef.current.undo(value);
-                  onSave(canvasGridRef.current);
+
+                  if (value) {
+                    history.current = history.current.slice(
+                      0,
+                      history.current.length - 1
+                    );
+                    canvasGridRef.current.undo(value);
+                    onSave(canvasGridRef.current);
+                  }
                 }
               }}
             >

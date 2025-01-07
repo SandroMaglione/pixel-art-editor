@@ -1,4 +1,5 @@
 "use client";
+
 import { clamp, lerp } from "@/lib/helpers";
 import { ReactElement, useCallback, useState } from "react";
 
@@ -26,7 +27,7 @@ export default function ColorPickerBar({
   }, []);
 
   const onUpdateValue = (e: React.TouchEvent<HTMLDivElement>) => {
-    const clientX = e.touches[0].clientX;
+    const clientX = e.touches[0]?.clientX ?? 0;
     const { left, width } = e.currentTarget.getBoundingClientRect();
     const percentage = clamp(0, 1)((clientX - left) / (width - left));
     onValueChange(percentage);

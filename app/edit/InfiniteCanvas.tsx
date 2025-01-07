@@ -19,8 +19,8 @@ export default function InfiniteCanvas({
 }: InfiniteCanvasProps): ReactElement {
   const onTouchDraw = (event: React.TouchEvent<HTMLCanvasElement>) => {
     // get first touch coordinates
-    const touch0X = event.touches[0].pageX;
-    const touch0Y = event.touches[0].pageY;
+    const touch0X = event.touches[0]?.pageX ?? 0;
+    const touch0Y = event.touches[0]?.pageY ?? 0;
 
     const prevTouch0X = canvasGrid.prevTouch[0]!.pageX;
     const prevTouch0Y = canvasGrid.prevTouch[0]!.pageY;
@@ -32,8 +32,8 @@ export default function InfiniteCanvas({
       });
     } else if (canvasGrid.touchMode === "double") {
       // get second touch coordinates
-      const touch1X = event.touches[1].pageX;
-      const touch1Y = event.touches[1].pageY;
+      const touch1X = event.touches[1]?.pageX ?? 0;
+      const touch1Y = event.touches[1]?.pageY ?? 0;
 
       const prevTouch1X = canvasGrid.prevTouch[1]!.pageX;
       const prevTouch1Y = canvasGrid.prevTouch[1]!.pageY;
@@ -86,8 +86,8 @@ export default function InfiniteCanvas({
       canvasGrid.draw();
     }
 
-    canvasGrid.prevTouch[0] = event.touches[0];
-    canvasGrid.prevTouch[1] = event.touches[1];
+    canvasGrid.prevTouch[0] = event.touches[0] ?? null;
+    canvasGrid.prevTouch[1] = event.touches[1] ?? null;
   };
 
   const onTouchStart = (event: React.TouchEvent<HTMLCanvasElement>) => {
@@ -98,8 +98,8 @@ export default function InfiniteCanvas({
     }
 
     // store the last touches
-    canvasGrid.prevTouch[0] = event.touches[0];
-    canvasGrid.prevTouch[1] = event.touches[1];
+    canvasGrid.prevTouch[0] = event.touches[0] ?? null;
+    canvasGrid.prevTouch[1] = event.touches[1] ?? null;
 
     onTouchDraw(event);
   };
