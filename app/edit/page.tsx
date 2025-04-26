@@ -1,7 +1,6 @@
 "use client";
 
 import { db } from "@/lib/db";
-import { MachineProvider } from "@/lib/machine";
 import { useLiveQuery } from "dexie-react-hooks";
 import { useSearchParams } from "next/navigation";
 import Editor from "./Editor";
@@ -17,9 +16,5 @@ export default function Home() {
     return <span>...</span>;
   }
 
-  return (
-    <MachineProvider pixelArtCanvas={canvasGrid} name={name}>
-      <Editor />
-    </MachineProvider>
-  );
+  return <Editor pixelArtCanvas={canvasGrid} name={name} />;
 }

@@ -1,15 +1,19 @@
-import { useModeActor } from "@/lib/machine";
+import { type machine } from "@/lib/machine";
 import { useSelector } from "@xstate/react";
+import type { ActorRefFrom } from "xstate";
 import ModeButton from "./ModeButton";
 
-export default function OptionsBar() {
-  const modeActor = useModeActor();
-  const context = useSelector(modeActor, (snapshot) => snapshot.context);
+export default function OptionsBar({
+  actor,
+}: {
+  actor: ActorRefFrom<typeof machine>;
+}) {
+  const context = useSelector(actor, (snapshot) => snapshot.context);
   return (
     <div className="flex">
       <ModeButton
         mode="color"
-        onClick={() => modeActor.send({ type: "mode", value: "color" })}
+        onClick={() => actor.send({ type: "mode.update", value: "color" })}
         currentMode={context.mode}
       >
         <svg
@@ -28,7 +32,7 @@ export default function OptionsBar() {
       </ModeButton>
       <ModeButton
         mode="picker"
-        onClick={() => modeActor.send({ type: "mode", value: "picker" })}
+        onClick={() => actor.send({ type: "mode.update", value: "picker" })}
         currentMode={context.mode}
       >
         <svg
@@ -48,7 +52,7 @@ export default function OptionsBar() {
       </ModeButton>
       <ModeButton
         mode="erase"
-        onClick={() => modeActor.send({ type: "mode", value: "erase" })}
+        onClick={() => actor.send({ type: "mode.update", value: "erase" })}
         currentMode={context.mode}
       >
         <svg
@@ -68,7 +72,7 @@ export default function OptionsBar() {
       </ModeButton>
       <ModeButton
         mode="fill"
-        onClick={() => modeActor.send({ type: "mode", value: "fill" })}
+        onClick={() => actor.send({ type: "mode.update", value: "fill" })}
         currentMode={context.mode}
       >
         <svg
@@ -89,7 +93,7 @@ export default function OptionsBar() {
       </ModeButton>
       <ModeButton
         mode="swap-color"
-        onClick={() => modeActor.send({ type: "mode", value: "swap-color" })}
+        onClick={() => actor.send({ type: "mode.update", value: "swap-color" })}
         currentMode={context.mode}
       >
         <svg

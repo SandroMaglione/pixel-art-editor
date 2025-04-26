@@ -12,7 +12,6 @@
     "@effect/platform": "^0.80.14",
     "@effect/platform-browser": "^0.60.5",
     "@xstate/react": "^5.0.3",
-    "@xstate/store": "^3.5.1",
     "clsx": "^2.1.1",
     "dexie": "^4.0.10",
     "dexie-react-hooks": "^1.1.7",

@@ -1,35 +1,121 @@
-import { useActorRef, useSelector } from "@xstate/react";
-import { fromStore } from "@xstate/store";
-import { createContext, use } from "react";
-import { assign, setup, type ActorRefFrom } from "xstate";
+import { assign, setup, type ActorRefFrom, type AnyActorRef } from "xstate";
 import type { CanvasGrid } from "./canvas-grid";
 import { db } from "./db";
 import { canvasGridToSchema, canvasSchemaToGrid } from "./helpers";
 import { ColorHSL, type ColorPercentage, type PixelArtCanvas } from "./schema";
-import type { CanvasGridAction, EditorMode } from "./types";
+import type { EditorMode } from "./types";
 
-const modeStore = fromStore({
-  context: { mode: "color" } as { mode: EditorMode },
-  on: {
-    mode: (context, event: { value: EditorMode }) => ({
-      ...context,
-      mode: event.value,
-    }),
+interface DoubleTouchEvent {
+  type: "move";
+  midX: number;
+  midY: number;
+  scaleAmount: number;
+  panX: number;
+  panY: number;
+  zoomAmount: number;
+}
+
+interface SingleTouchEvent {
+  type: "draw";
+  touchX: number;
+  touchY: number;
+}
+
+const infiniteCanvasMachine = setup({
+  types: {
+    input: {} as {
+      parent: AnyActorRef;
+    },
+    context: {} as {
+      touchMode: "single" | "double";
+      prevTouch: [React.Touch | null, React.Touch | null];
+      parent: AnyActorRef;
+    },
+    events: {} as
+      | { type: "touch.start"; event: React.TouchEvent<HTMLCanvasElement> }
+      | { type: "touch.move"; event: React.TouchEvent<HTMLCanvasElement> },
   },
-});
+}).createMachine({
+  context: ({ input }) => ({
+    touchMode: "single",
+    prevTouch: [null, null],
+    parent: input.parent,
+  }),
+  initial: "Idle",
+  states: {
+    Idle: {
+      on: {
+        "touch.move": {
+          actions: assign(({ context, event: { event } }) => {
+            // get first touch coordinates
+            const touch0X = event.touches[0]?.pageX ?? 0;
+            const touch0Y = event.touches[0]?.pageY ?? 0;
 
-const colorStore = fromStore({
-  context: { color: ColorHSL.build(0, 0, 0) },
-  on: {
-    update: (
-      context,
-      event: {
-        value: typeof ColorPercentage.Type;
-      }
-    ) => ({
-      ...context,
-      color: event.value.toHSL,
-    }),
+            const prevTouch0X = context.prevTouch[0]!.pageX;
+            const prevTouch0Y = context.prevTouch[0]!.pageY;
+
+            if (context.touchMode === "single") {
+              context.parent.send({
+                type: "draw",
+                touchX: touch0X,
+                touchY: touch0Y,
+              } satisfies SingleTouchEvent);
+            } else if (context.touchMode === "double") {
+              // get second touch coordinates
+              const touch1X = event.touches[1]?.pageX ?? 0;
+              const touch1Y = event.touches[1]?.pageY ?? 0;
+
+              const prevTouch1X = context.prevTouch[1]!.pageX;
+              const prevTouch1Y = context.prevTouch[1]!.pageY;
+
+              // get midpoints
+              const midX = (touch0X + touch1X) / 2;
+              const midY = (touch0Y + touch1Y) / 2;
+              const prevMidX = (prevTouch0X + prevTouch1X) / 2;
+              const prevMidY = (prevTouch0Y + prevTouch1Y) / 2;
+
+              // calculate the distances between the touches
+              const hypot = Math.sqrt(
+                Math.pow(touch0X - touch1X, 2) + Math.pow(touch0Y - touch1Y, 2)
+              );
+              const prevHypot = Math.sqrt(
+                Math.pow(prevTouch0X - prevTouch1X, 2) +
+                  Math.pow(prevTouch0Y - prevTouch1Y, 2)
+              );
+
+              // calculate the screen scale change
+              const zoomAmount = hypot / prevHypot;
+
+              const scaleAmount = 1 - zoomAmount;
+
+              // calculate how many pixels the midpoints have moved in the x and y direction
+              const panX = midX - prevMidX;
+              const panY = midY - prevMidY;
+
+              context.parent.send({
+                type: "move",
+                midX,
+                midY,
+                scaleAmount,
+                panX,
+                panY,
+                zoomAmount,
+              } satisfies DoubleTouchEvent);
+            }
+
+            return {
+              prevTouch: [event.touches[0] ?? null, event.touches[1] ?? null],
+            };
+          }),
+        },
+        "touch.start": {
+          actions: assign(({ event: { event } }) => ({
+            prevTouch: [event.touches[0] ?? null, event.touches[1] ?? null],
+            touchMode: event.touches.length == 1 ? "single" : "double",
+          })),
+        },
+      },
+    },
   },
 });
 
@@ -40,13 +126,15 @@ export const machine = setup({
       canvasGrid: CanvasGrid;
       name: string;
       history: readonly PixelArtCanvas[];
-    },
-    children: {} as {
-      color: "color";
-      mode: "mode";
+      infiniteCanvas: ActorRefFrom<typeof infiniteCanvasMachine>;
+      mode: EditorMode;
+      color: ColorHSL;
     },
     events: {} as
-      | { type: "execute"; action: CanvasGridAction }
+      | SingleTouchEvent
+      | DoubleTouchEvent
+      | { type: "color.update"; value: ColorPercentage }
+      | { type: "mode.update"; value: EditorMode }
       | { type: "undo" }
       | { type: "centering" }
       | { type: "resize.init" }
@@ -54,31 +142,68 @@ export const machine = setup({
       | { type: "resize.close" },
   },
   actors: {
-    color: colorStore,
-    mode: modeStore,
+    infiniteCanvas: infiniteCanvasMachine,
   },
 }).createMachine({
-  context: ({ input }) => ({
+  context: ({ input, spawn, self }) => ({
     canvasGrid: canvasSchemaToGrid(input.pixelArtCanvas),
     name: input.name,
     history: [],
+    mode: "color",
+    color: ColorHSL.build(0, 0, 0),
+    infiniteCanvas: spawn(infiniteCanvasMachine, {
+      input: { parent: self },
+    }),
   }),
   initial: "Idle",
   states: {
     Idle: {
+      entry: ({ context }) => {
+        context.canvasGrid.init();
+      },
       on: {
-        execute: {
-          actions: assign(({ context, event }) => {
-            const isChanged = context.canvasGrid.execute(event.action);
-            const updated = canvasGridToSchema(
-              context.name,
-              context.canvasGrid
-            );
-            db.file.put(updated);
-            return {
-              history: isChanged ? [...context.history, updated] : undefined,
-            };
-          }),
+        move: {
+          actions: ({ context, event }) => {
+            // Get the relative position of the middle of the zoom.
+            // 0, 0 would be top left.
+            // 0, 1 would be top right etc.
+            const zoomRatioX =
+              event.midX / (context.canvasGrid.canvas?.clientWidth ?? 1);
+            const zoomRatioY =
+              event.midY / (context.canvasGrid.canvas?.clientHeight ?? 1);
+
+            // calculate the amounts zoomed from each edge of the screen
+            const unitsZoomedX =
+              context.canvasGrid.trueWidth() * event.scaleAmount;
+            const unitsZoomedY =
+              context.canvasGrid.trueHeight() * event.scaleAmount;
+
+            const unitsAddLeft = unitsZoomedX * zoomRatioX;
+            const unitsAddTop = unitsZoomedY * zoomRatioY;
+
+            // scale this movement based on the zoom level
+            context.canvasGrid.offsetX += event.panX / context.canvasGrid.scale;
+            context.canvasGrid.offsetY += event.panY / context.canvasGrid.scale;
+
+            context.canvasGrid.offsetX += unitsAddLeft;
+            context.canvasGrid.offsetY += unitsAddTop;
+
+            context.canvasGrid.zoom(event.zoomAmount);
+            context.canvasGrid.draw();
+          },
+        },
+        draw: {
+          actions: ({ context, event, self }) => {
+            context.canvasGrid.addCellAt({
+              touchX: event.touchX,
+              touchY: event.touchY,
+              mode: context.mode,
+              color: context.color,
+              onColorPick: (color) => {
+                self.send({ type: "color.update", value: color });
+              },
+            });
+          },
         },
         undo: {
           actions: assign(({ context }) => {
@@ -107,6 +232,12 @@ export const machine = setup({
             context.canvasGrid.recenter();
           },
         },
+        "color.update": {
+          actions: assign(({ event }) => ({ color: event.value.toHSL })),
+        },
+        "mode.update": {
+          actions: assign(({ event }) => ({ mode: event.value })),
+        },
         "resize.init": { target: "Resizing" },
       },
     },
@@ -115,59 +246,11 @@ export const machine = setup({
         "resize.close": { target: "Idle" },
         "resize.update": {
           target: "Idle",
+          actions: ({ context, event }) => {
+            context.canvasGrid.resize(event.value);
+          },
         },
       },
     },
   },
 });
-
-export const MachineContext = createContext<ActorRefFrom<typeof machine>>(
-  null!
-);
-
-export const MachineProvider = ({
-  children,
-  pixelArtCanvas,
-  name,
-}: {
-  children: React.ReactNode;
-  pixelArtCanvas: PixelArtCanvas;
-  name: string;
-}) => {
-  const actor = useActorRef(machine, {
-    input: { pixelArtCanvas, name },
-  });
-  return (
-    <MachineContext.Provider value={actor}>{children}</MachineContext.Provider>
-  );
-};
-
-export const useEditorMachine = () => {
-  const actorRef = use(MachineContext);
-  return actorRef;
-};
-
-export const useColorActor = () => {
-  const actorRef = useEditorMachine();
-  const colorActor = useSelector(
-    actorRef,
-    (snapshot) => snapshot.children.color
-  );
-
-  if (!colorActor) {
-    throw new Error("Color actor not found");
-  }
-
-  return colorActor;
-};
-
-export const useModeActor = () => {
-  const actorRef = useEditorMachine();
-  const modeActor = useSelector(actorRef, (snapshot) => snapshot.children.mode);
-
-  if (!modeActor) {
-    throw new Error("Mode actor not found");
-  }
-
-  return modeActor;
-};

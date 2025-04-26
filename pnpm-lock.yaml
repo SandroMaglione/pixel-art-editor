@@ -17,9 +17,6 @@ importers:
       '@xstate/react':
         specifier: ^5.0.3
         version: 5.0.3(@types/react@19.0.3)(react@19.0.0)(xstate@5.19.2)
-      '@xstate/store':
-        specifier: ^3.5.1
-        version: 3.5.1(react@19.0.0)
       clsx:
         specifier: ^2.1.1
         version: 2.1.1
@@ -390,17 +387,6 @@ packages:
       xstate: ^5.19.2
     peerDependenciesMeta:
       xstate:
-        optional: true
-
-  '@xstate/store@3.5.1':
-    resolution: {integrity: sha512-2iWJM5EcsK+m0+lqfZNTbxwlslhYnarupPG956h3KCmz83tGOrGT/V3A6vbFsd081fByJ1ey9RAWV3CE3FufPA==}
-    peerDependencies:
-      react: ^18.2.0 || ^19.0.0
-      solid-js: ^1.7.6
-    peerDependenciesMeta:
-      react:
-        optional: true
-      solid-js:
         optional: true
 
   busboy@1.6.0:
@@ -904,10 +890,6 @@ snapshots:
       xstate: 5.19.2
     transitivePeerDependencies:
       - '@types/react'
-
-  '@xstate/store@3.5.1(react@19.0.0)':
-    optionalDependencies:
-      react: 19.0.0
 
   busboy@1.6.0:
     dependencies:

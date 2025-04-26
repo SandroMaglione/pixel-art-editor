@@ -1,14 +1,15 @@
-import { useEditorMachine } from "@/lib/machine";
+import { type machine } from "@/lib/machine";
+import type { ActorRefFrom } from "xstate";
 import ActionButton from "./ActionButton";
 
-export default function ActionsBar() {
-  const editorActor = useEditorMachine();
+export default function ActionsBar({
+  actor,
+}: {
+  actor: ActorRefFrom<typeof machine>;
+}) {
   return (
     <div className="flex justify-end">
-      <ActionButton
-        action="undo"
-        onClick={() => editorActor.send({ type: "undo" })}
-      >
+      <ActionButton action="undo" onClick={() => actor.send({ type: "undo" })}>
         <svg
           xmlns="http://www.w3.org/2000/svg"
           viewBox="0 0 24 24"
@@ -25,7 +26,7 @@ export default function ActionsBar() {
       </ActionButton>
       <ActionButton
         action="centering"
-        onClick={() => editorActor.send({ type: "centering" })}
+        onClick={() => actor.send({ type: "centering" })}
       >
         <svg
           xmlns="http://www.w3.org/2000/svg"
@@ -44,7 +45,7 @@ export default function ActionsBar() {
       </ActionButton>
       <ActionButton
         action="resize"
-        onClick={() => editorActor.send({ type: "resize.init" })}
+        onClick={() => actor.send({ type: "resize.init" })}
       >
         <svg
           xmlns="http://www.w3.org/2000/svg"

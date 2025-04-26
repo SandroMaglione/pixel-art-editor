@@ -1,6 +1,6 @@
 import { canvasSchemaToGrid, eqColor, fromCellKey, toCellKey } from "./helpers";
 import { ColorHSL, PixelArtCanvas, type ColorPercentage } from "./schema";
-import { CanvasGridAction, CellKey, EditorMode } from "./types";
+import { CellKey, type EditorMode } from "./types";
 
 const CELL_SIZE = 40;
 const PREVIEW_MAX_WIDTH = 50; // px
@@ -16,9 +16,6 @@ export class CanvasGrid {
 
   canvas: HTMLCanvasElement | null = null;
   context: CanvasRenderingContext2D | null = null;
-
-  touchMode: "single" | "double" = "single";
-  prevTouch: [React.Touch | null, React.Touch | null] = [null, null];
 
   cells: Map<CellKey, { color: ColorHSL }> = new Map();
 
@@ -126,17 +123,17 @@ export class CanvasGrid {
     this.draw();
   }
 
-  private _addCellAt({
-    color,
-    mode,
-    onColorPick,
+  addCellAt({
     touchX,
     touchY,
+    mode,
+    color,
+    onColorPick,
   }: {
     touchX: number;
     touchY: number;
-    color: ColorHSL;
     mode: EditorMode;
+    color: ColorHSL;
     onColorPick: (color: ColorPercentage) => void;
   }): boolean {
     let isChanged = false;
@@ -170,14 +167,6 @@ export class CanvasGrid {
       this.draw();
     }
 
-    return isChanged;
-  }
-
-  execute(action: CanvasGridAction): boolean {
-    let isChanged = false;
-    if (action._tag === "draw") {
-      isChanged = this._addCellAt(action.value);
-    }
     return isChanged;
   }
 

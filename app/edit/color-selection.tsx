@@ -1,11 +1,15 @@
-import { useColorActor } from "@/lib/machine";
+import type { machine } from "@/lib/machine";
 import { ColorPercentage } from "@/lib/schema";
 import { useSelector } from "@xstate/react";
+import type { ActorRefFrom } from "xstate";
 import ColorPickerBar from "./ColorPickerBar";
 
-export default function ColorSelection() {
-  const colorActor = useColorActor();
-  const { color } = useSelector(colorActor, (snapshot) => snapshot.context);
+export default function ColorSelection({
+  actor,
+}: {
+  actor: ActorRefFrom<typeof machine>;
+}) {
+  const { color } = useSelector(actor, (snapshot) => snapshot.context);
   const colorPercentage = color.toPercentage;
   return (
     <>
@@ -27,8 +31,8 @@ export default function ColorSelection() {
         }}
         value={colorPercentage.hue}
         onValueChange={(value) =>
-          colorActor.send({
-            type: "update",
+          actor.send({
+            type: "color.update",
             value: new ColorPercentage({
               hue: value,
               saturation: colorPercentage.saturation,
@@ -48,8 +52,8 @@ export default function ColorSelection() {
         }
         value={colorPercentage.saturation}
         onValueChange={(value) =>
-          colorActor.send({
-            type: "update",
+          actor.send({
+            type: "color.update",
             value: new ColorPercentage({
               hue: colorPercentage.hue,
               saturation: value,
@@ -65,8 +69,8 @@ export default function ColorSelection() {
         }}
         value={colorPercentage.lightness}
         onValueChange={(value) =>
-          colorActor.send({
-            type: "update",
+          actor.send({
+            type: "color.update",
             value: new ColorPercentage({
               hue: colorPercentage.hue,
               saturation: colorPercentage.saturation,
