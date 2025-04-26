@@ -1,7 +1,7 @@
 import { Schema } from "effect";
-import { lerp } from "./helpers";
+import { clamp, lerp } from "./helpers";
 
-export const Percentage = Schema.Number.pipe(Schema.nonNegative()).pipe(
+export const Percentage = Schema.Number.pipe(Schema.between(0, 1)).pipe(
   Schema.brand("percentage")
 );
 
@@ -32,10 +32,11 @@ export class ColorHSL extends Schema.Class<ColorHSL>("ColorHSL")({
     });
 
   public get toPercentage(): ColorPercentage {
+    const clamp01 = clamp(0, 1);
     return new ColorPercentage({
-      hue: Percentage.make(lerp(0, 365, this.hue)),
-      saturation: Percentage.make(lerp(0, 100, this.saturation)),
-      lightness: Percentage.make(lerp(0, 100, this.lightness)),
+      hue: Percentage.make(clamp01(this.hue / 360)),
+      saturation: Percentage.make(clamp01(this.saturation / 100)),
+      lightness: Percentage.make(clamp01(this.lightness / 100)),
     });
   }
 }
@@ -48,6 +49,7 @@ export class ColorPercentage extends Schema.Class<ColorPercentage>(
   lightness: Percentage,
 }) {
   public get toHSL(): ColorHSL {
+    console.log(this.hue, this.saturation, this.lightness);
     return new ColorHSL({
       hue: Hue.make(lerp(0, 365, this.hue)),
       saturation: Saturation.make(lerp(0, 100, this.saturation)),
