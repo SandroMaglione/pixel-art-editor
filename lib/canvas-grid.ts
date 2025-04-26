@@ -1,6 +1,6 @@
 import { canvasSchemaToGrid, eqColor, fromCellKey, toCellKey } from "./helpers";
-import { PixelArtCanvas } from "./schema";
-import { CanvasGridAction, CellKey, ColorHSL, EditorMode } from "./types";
+import { ColorHSL, PixelArtCanvas, type ColorPercentage } from "./schema";
+import { CanvasGridAction, CellKey, EditorMode } from "./types";
 
 const CELL_SIZE = 40;
 const PREVIEW_MAX_WIDTH = 50; // px
@@ -96,7 +96,7 @@ export class CanvasGrid {
     this.scale *= amount;
   }
 
-  private _resize({ x, y }: { x: number; y: number }): boolean {
+  resize({ x, y }: { x: number; y: number }): boolean {
     if (this.pixelHeight !== y || this.pixelWidth !== x) {
       this.pixelWidth = x;
       this.pixelHeight = y;
@@ -137,7 +137,7 @@ export class CanvasGrid {
     touchY: number;
     color: ColorHSL;
     mode: EditorMode;
-    onColorPick: (color: ColorHSL) => void;
+    onColorPick: (color: ColorPercentage) => void;
   }): boolean {
     let isChanged = false;
 
@@ -153,7 +153,7 @@ export class CanvasGrid {
         this.cells.delete(cellKey);
         isChanged = true;
       } else if (mode === "picker" && findCell) {
-        onColorPick(findCell.color);
+        onColorPick(findCell.color.toPercentage);
       } else if (mode === "fill") {
         this._fill(x, y, color, findCell?.color ?? null);
         isChanged = true;
@@ -175,9 +175,7 @@ export class CanvasGrid {
 
   execute(action: CanvasGridAction): boolean {
     let isChanged = false;
-    if (action._tag === "change-size") {
-      isChanged = this._resize(action.value);
-    } else if (action._tag === "draw") {
+    if (action._tag === "draw") {
       isChanged = this._addCellAt(action.value);
     }
     return isChanged;
@@ -231,7 +229,7 @@ export class CanvasGrid {
     Array.from(this.cells.entries()).forEach(([cellKey, { color }]) => {
       if (this.canvas && this.context) {
         const [cellX, cellY] = fromCellKey(cellKey);
-        this.context.fillStyle = `hsl(${color[0]}deg ${color[1]}% ${color[2]}%)`;
+        this.context.fillStyle = `hsl(${color.hue}deg ${color.saturation}% ${color.lightness}%)`;
         this.context.fillRect(
           this.toScreenX(cellX * CELL_SIZE),
           this.toScreenY(cellY * CELL_SIZE),
@@ -286,7 +284,7 @@ export class CanvasGrid {
 
     Array.from(this.cells.entries()).forEach(([cellKey, { color }]) => {
       const [cellX, cellY] = fromCellKey(cellKey);
-      contextPreview.fillStyle = `hsl(${color[0]}deg ${color[1]}% ${color[2]}%)`;
+      contextPreview.fillStyle = `hsl(${color.hue}deg ${color.saturation}% ${color.lightness}%)`;
       contextPreview.fillRect(
         cellX * cellSize,
         cellY * cellSize,

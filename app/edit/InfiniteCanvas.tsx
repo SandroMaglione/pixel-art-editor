@@ -1,11 +1,12 @@
 import { CanvasGrid } from "@/lib/canvas-grid";
-import { CanvasGridAction, ColorHSL, EditorMode } from "@/lib/types";
+import type { ColorHSL, ColorPercentage } from "@/lib/schema";
+import { CanvasGridAction, EditorMode } from "@/lib/types";
 import { ReactElement, useEffect } from "react";
 
 interface InfiniteCanvasProps {
   color: ColorHSL;
   mode: EditorMode;
-  onColorPick: (color: ColorHSL) => void;
+  onColorPick: (color: ColorPercentage) => void;
   canvasGrid: CanvasGrid;
   onExecute: (action: CanvasGridAction) => void;
 }

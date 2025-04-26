@@ -1,12 +1,13 @@
 "use client";
 
 import { clamp, lerp } from "@/lib/helpers";
-import { ReactElement, useCallback, useState } from "react";
+import { Percentage } from "@/lib/schema";
+import { ReactElement, useState } from "react";
 
 interface ColorPickerBarProps {
   /** 0-100 */
-  value: number;
-  onValueChange: (value: number) => void;
+  value: typeof Percentage.Type;
+  onValueChange: (value: typeof Percentage.Type) => void;
   style: React.CSSProperties;
 }
 
@@ -20,22 +21,20 @@ export default function ColorPickerBar({
 
   const barValue = lerp(0, width, value);
 
-  const measuredRef = useCallback((node: HTMLDivElement) => {
-    if (node !== null) {
-      setWidth(node.getBoundingClientRect().width);
-    }
-  }, []);
-
   const onUpdateValue = (e: React.TouchEvent<HTMLDivElement>) => {
     const clientX = e.touches[0]?.clientX ?? 0;
     const { left, width } = e.currentTarget.getBoundingClientRect();
     const percentage = clamp(0, 1)((clientX - left) / (width - left));
-    onValueChange(percentage);
+    onValueChange(Percentage.make(percentage));
   };
 
   return (
     <div
-      ref={measuredRef}
+      ref={(node) => {
+        if (node !== null) {
+          setWidth(node.getBoundingClientRect().width);
+        }
+      }}
       onTouchEnd={() => setIsClicking(false)}
       onTouchStart={(e) => {
         setIsClicking(true);

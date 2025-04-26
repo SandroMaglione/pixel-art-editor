@@ -1,6 +1,6 @@
 import { CanvasGrid } from "./canvas-grid";
-import { PixelArtCanvas } from "./schema";
-import { CellKey, ColorHSL } from "./types";
+import { ColorHSL, Hue, Lightness, PixelArtCanvas, Saturation } from "./schema";
+import { CellKey } from "./types";
 
 export const lerp = (a: number, b: number, n: number): number =>
   (1 - n) * a + n * b;
@@ -16,7 +16,9 @@ export const fromCellKey = (cellKey: CellKey): [x: number, y: number] => {
 };
 
 export const eqColor = (c1: ColorHSL, c2: ColorHSL): boolean =>
-  c1[0] === c2[0] && c1[1] === c2[1] && c1[2] === c2[2];
+  c1.hue === c2.hue &&
+  c1.saturation === c2.saturation &&
+  c1.lightness === c2.lightness;
 
 export const canvasGridToSchema = (
   name: string,
@@ -27,7 +29,15 @@ export const canvasGridToSchema = (
   pixelWidth: canvasGrid.pixelWidth,
   cells: Array.from(canvasGrid.cells.entries()).map(([cellKey, cellValue]) => {
     const [x, y] = fromCellKey(cellKey);
-    return { x, y, color: cellValue.color };
+    return {
+      x,
+      y,
+      color: [
+        cellValue.color.hue,
+        cellValue.color.saturation,
+        cellValue.color.lightness,
+      ],
+    };
   }),
 });
 
@@ -38,7 +48,13 @@ export const canvasSchemaToGrid = (data: PixelArtCanvas): CanvasGrid => {
   });
   const cells: Map<CellKey, { color: ColorHSL }> = new Map();
   data.cells.forEach((cell) => {
-    cells.set(toCellKey(cell.x, cell.y), { color: [...cell.color] });
+    cells.set(toCellKey(cell.x, cell.y), {
+      color: new ColorHSL({
+        hue: Hue.make(cell.color[0]),
+        saturation: Saturation.make(cell.color[1]),
+        lightness: Lightness.make(cell.color[2]),
+      }),
+    });
   });
   canvasGrid.cells = cells;
   return canvasGrid;

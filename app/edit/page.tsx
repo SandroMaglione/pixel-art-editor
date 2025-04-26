@@ -1,7 +1,7 @@
 "use client";
 
 import { db } from "@/lib/db";
-import { canvasSchemaToGrid } from "@/lib/helpers";
+import { MachineProvider } from "@/lib/machine";
 import { useLiveQuery } from "dexie-react-hooks";
 import { useSearchParams } from "next/navigation";
 import Editor from "./Editor";
@@ -17,5 +17,9 @@ export default function Home() {
     return <span>...</span>;
   }
 
-  return <Editor name={name} canvasGrid={canvasSchemaToGrid(canvasGrid)} />;
+  return (
+    <MachineProvider pixelArtCanvas={canvasGrid} name={name}>
+      <Editor />
+    </MachineProvider>
+  );
 }
